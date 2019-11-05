@@ -56,4 +56,10 @@ module Deck = struct
     | [] -> None
     | h :: t -> Some (h, t)
 
+  let length (deck : t) : int = 
+    List.length deck
+
+  let to_list (deck : t) : card list = 
+    deck
+
 end
