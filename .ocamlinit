@@ -2,6 +2,6 @@
 #require "yojson";;
 #require "ANSITerminal";;
 #directory "_build";;
-#load "game.cmo";;
-#load "player.cmo";;
 #load "deck.cmo";;
+#load "player.cmo";;
+#load "game.cmo";;
