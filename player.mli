@@ -1,15 +1,26 @@
 open Deck
 
 type player_id = int
+type player_count = int
+type player_money = int
 
-type t = player_id * (card list)
+type t = {
+  id: player_id;
+  hand: card list;
+  count: player_count;
+  cash: player_money
+}
 
-val new_player : player_id -> t
+val new_player : player_id -> player_money -> t
 
-val draw : Deck.t -> t -> (Deck.t * t)
+val get_id : t -> player_id
 
-val has_in_hand : suit -> value -> t -> bool
+val get_count : t -> player_count
 
-val remove_from_hand : suit -> value -> t -> t
+val get_cash : t -> player_money
 
-val get_hand : t -> card list
+val new_round : t -> t
+
+val add_to_hand : t -> card -> t
+
+val inc_count : t -> int -> t

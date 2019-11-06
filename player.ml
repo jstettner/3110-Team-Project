@@ -1,23 +1,53 @@
 open Deck
 
 type player_id = int
+type player_count = int
+type player_money = int
 
-type t = player_id * (card list)
+type t = {
+  id: player_id;
+  hand: card list;
+  count: player_count;
+  cash: player_money
+}
 
-let new_player (id : player_id) : t =
-  (id, [])
+let new_player (id : player_id) (starting_cash : player_money) : t =
+  {
+    id= id;
+    hand= [];
+    count= 0;
+    cash = starting_cash;
+  }
 
-let draw (deck : Deck.t) ((p_id, cards) : t) : (Deck.t * t) =
-  match Deck.choose (deck) with
-  | None -> (deck, (p_id, cards))
-  | Some (card, new_deck) -> (new_deck, (p_id, card :: cards))
+let get_id (p: t) : player_id =
+  p.id
 
-let has_in_hand (zuit : suit) (zalue : value) ((p_id, cards) : t) : bool = 
-  List.mem {suit = zuit; value = zalue} cards
+let get_count (p: t) : player_count =
+  p.count
 
-let remove_from_hand (zuit : suit) (zalue : value) ((p_id, cards) : t) : t = 
-  let new_hand = List.filter (fun x -> x <> {suit = zuit; value = zalue}) cards in
-  (p_id, new_hand)
+let get_cash (p: t) : player_money =
+  p.cash
 
-let get_hand ((p_id, cards) : t) : card list = 
-  cards
+let new_round (p: t) : t = 
+  {
+    id=p.id;
+    hand=[];
+    count=0;
+    cash=p.cash
+  }
+
+let add_to_hand (p: t) (c: card) : t = 
+  {
+    id= p.id;
+    hand= c :: p.hand;
+    count= p.count;
+    cash = p.cash;
+  }
+
+let inc_count (p: t) (count: int) : t =
+  {
+    id= p.id;
+    hand= p.hand;
+    count= p.count + count;
+    cash = p.cash;
+  }

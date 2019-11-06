@@ -60,3 +60,8 @@ let length (deck : t) : int =
 
 let to_list (deck : t) : card list = 
   deck
+
+let val_of (c : card) : int = 
+  if c.value > 1 && c.value <= 10 then c.value else 
+  if c.value > 10 && c.value <= 13 then 10 else
+  if c.value = 1 then 11 else failwith("invalid card")
