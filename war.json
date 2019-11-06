@@ -1,0 +1,61 @@
+{
+  "name": "War",
+  "game_vars": [
+    {
+      "var_id": "p1_score",
+      "bound_to": 1
+    },
+    {
+      "var_id": "p2_score",
+      "bound_to": 2
+    },
+    {
+      "var_id": "p1_last",
+      "bound_to": 0
+    },
+    {
+      "var_id": "p2_last",
+      "bound_to": 0
+    }
+  ],
+  "players": [
+    1,
+    2
+  ],
+  "win_cond": [
+    {
+      "cond": "EMPTY",
+      "outcomes": [
+        {
+          "out_id": "p1_win",
+          "cond": "VAR p1_score EQ 52",
+          "winner": 1
+        },
+        {
+          "out_id": "p2_win",
+          "cond": "VAR p2_score EQ 52",
+          "winner": 2
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "act_id": "DRAW",
+      "act": [
+        "DRAWDISCINTO p1_last",
+        "DRAWDISCINTO p2_last"
+      ]
+    },
+    {
+      "act_id": "CHECK",
+      "act": [
+        "IF VAR p1_last GT p2_last THEN SET VAR p1_score = VAR p1_score PLUS 2 ELSE IF VAR p1_last LT p2_last THEN SET VAR p2_score = VAR p2_score PLUS 2"
+      ]
+    }
+  ],
+  "turn": [
+    "DRAW",
+    "CHECK"
+  ]
+}
