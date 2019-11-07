@@ -1,0 +1,5 @@
+To test the modules, run `make build` and then in utop `#use` either "player.ml", "state.ml", or "deck.ml".
+
+You can then test their functions.
+
+`make clean` deletes the old build file. 
