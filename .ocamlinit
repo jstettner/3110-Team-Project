@@ -5,3 +5,4 @@
 #load "deck.cmo";;
 #load "player.cmo";;
 #load "state.cmo";;
+#load "command.cmo";;

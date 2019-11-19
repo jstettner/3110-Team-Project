@@ -1,9 +1,9 @@
-MODULES=deck player state
+MODULES=deck player state command game
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
 TEST=test.byte
-MAIN=main.byte
+MAIN=game.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind
 
 default: build
