@@ -101,7 +101,9 @@ let rec playing_phase (st: State.t) (current_player: player_id) (player_count: i
   if current_player > player_count then
     st 
   else if current_player = 0 then
-    let dealer = st.house in
+    let (dealer, busted) = st.house in
+    (* if get_count dealer > 21 then *)
+
     if get_count dealer <= 16 then
       playing_phase (st |> dealer_hit) (current_player) player_count
     else 
