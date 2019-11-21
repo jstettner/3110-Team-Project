@@ -28,6 +28,9 @@ let get_count (p: t) : player_count =
 let get_cash (p: t) : player_money =
   p.cash
 
+let get_hand (p: t) : card list =
+  p.hand
+
 let new_round (p: t) : t = 
   {
     id=p.id;

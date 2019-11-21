@@ -3,6 +3,72 @@ open Deck
 open Player
 open Command
 
+let symbol_of_suit (s : suit) : string = 
+  match s with 
+  | Heart -> "    ♥    "
+  | Diamond -> "    ♦    "
+  | Spade -> "    ♠    "
+  | Club -> "    ♣    "
+
+let left_face_of_value (v : int) : string =
+  if v = 11 then "J        "
+  else if v = 12 then "Q        "
+  else if v = 13 then "K        "
+  else if v = 1 then "A        "
+  else if v = 10 then "10       "
+  else string_of_int v ^ "       "
+
+let right_face_of_value (v : int) : string =
+  if v = 11 then "        J"
+  else if v = 12 then "        Q"
+  else if v = 13 then "        K"
+  else if v = 1 then "        A"
+  else if v = 10 then "       10"
+  else "       " ^ string_of_int v 
+
+let print_card (st : State.t) (card : card) (i : int) : unit =
+  if i = 0 then print_endline "┌─────────┐"
+  else if i = 1 then print_endline ("│" ^ left_face_of_value card.value ^ "│")
+  else if i = 4 then print_endline ("│" ^ symbol_of_suit card.suit ^ "│")
+  else if i = 7 then print_endline ("│" ^ right_face_of_value card.value ^ "│")
+  else if i = 8 then print_endline "└─────────┘"
+  else print_endline "│         │"
+
+let print_hidden_card : unit =
+  begin 
+    print_endline "┌─────────┐";
+    print_endline "│░░░░░░░░░│";
+    print_endline "│░░░░░░░░░│";
+    print_endline "│░░░░░░░░░│";
+    print_endline "│░░░░░░░░░│";
+    print_endline "│░░░░░░░░░│";
+    print_endline "│░░░░░░░░░│";
+    print_endline "│░░░░░░░░░│";
+    print_endline "└─────────┘";
+  end
+
+let rec print_hand (st : State.t) (hand : card list) (i : int) : unit =
+  (* if i = List.length hand then false else *)
+  match hand with 
+  | [] -> ()
+  | h :: t -> print_card st h i; print_hand st t i
+
+let print (st : State.t) (id: player_id) : unit =
+  let player = get_player st id in
+  let hand = get_hand player in
+  for j = 0 to 8 do
+    (print_hand st hand j) done;;
+
+let print_dealer (st : State.t) : unit =
+  let player = get_player st 0 in
+  let hand = get_hand player in
+  match hand with
+  | h :: t -> begin print_hidden_card; 
+      for j = 0 to 8 do
+        (print_hand st t j) done end
+  | _ -> ()
+
+
 let rec betting_phase (st: State.t) (current_better: player_id) (player_count: int) : State.t = 
   if current_better > player_count then
     st else (
