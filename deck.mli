@@ -16,6 +16,8 @@ val new_deck : t
 
 val shuffle : t -> t
 
+val shuffle_n : t -> int -> t
+
 val choose : t -> (card * t) option 
 
 val length : t -> int

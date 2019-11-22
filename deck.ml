@@ -50,6 +50,12 @@ let shuffle (old_deck : t) : t =
 
   helper old_deck []
 
+let rec shuffle_n (deck : t) (n : int) : t = 
+  if n = 0 then
+    deck
+  else 
+    shuffle_n (shuffle deck) (n-1)
+
 let choose (deck : t) : (card * t) option = 
   match deck with
   | [] -> None
