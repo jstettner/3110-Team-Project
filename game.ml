@@ -11,6 +11,12 @@ let rec betting_phase (st: State.t) (current_better: player_id) (player_count: i
   else (
     let (player, _, _) = get_player st current_better in 
     let current_cash = player |> get_cash in 
+    (* if current_cash = 0 then 
+       begin 
+        ANSITerminal.(print_string [red ]
+                        ("\n\nPlayer "^(string_of_int current_better)^", you have run out of cash.\n"));
+       end 
+       else *)
     ANSITerminal.(print_string [green]
                     ("\n\nPlayer "^(string_of_int current_better)^", enter your bet.\n"));
     print_endline ("You have $"^(string_of_int current_cash)^".");
@@ -82,46 +88,81 @@ let rec find_busted (st : State.t) : player_id list =
   let busted = List.filter (fun (_, _, bust) -> bust) st.players in 
   List.map (fun (p, _, _) -> p.id) busted
 
-let rec find_not_busted (st : State.t) : (player_id * int) list = 
+let rec find_not_busted (st : State.t) : player_id list = 
   let not_busted = List.filter (fun (_, _, bust) -> (not bust)) st.players in 
-  List.map (fun (p, _, _) -> (p.id, p.count)) not_busted
+  List.map (fun (p, _, _) -> p.id) not_busted
 
 let rec dealer_busted (st : State.t) : bool =
   let (_, bust) = st.house in 
   bust
 
-let rec player_win (st : State.t) (p_id : player_id) : State.t =
+let blackjack (st : State.t) (p_id : player_id) : bool =
+  let (player, _, _) = get_player st p_id in 
+  if get_count player == 21 then true else false
 
+let player_win (st : State.t) (p_id : player_id) : State.t =
+  let (player, _, _) = get_player st p_id in  
+  let new_cash = (get_cash player) + (get_bet st p_id) in 
+  change_money st p_id new_cash
 
-  let rec player_loss (st : State.t) (p_id : player_id) : State.t =
+let player_loss (st : State.t) (p_id : player_id) : State.t =
+  let (player, _, _) = get_player st p_id in 
+  let new_cash = (get_cash player) - (get_bet st p_id) in 
+  change_money st p_id new_cash
 
-    let rec players_all_win (st : State.t) (p_ids : player_id list) : State.t =
+let rec players_all_win (st : State.t) (p_ids : player_id list) : State.t =
+  match p_ids with
+  | [] -> st
+  | h :: t ->  players_all_win (player_win st h) t
 
-      let rec players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
+let rec players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
+  match p_ids with
+  | [] -> st
+  | h :: t ->  players_all_lose (player_loss st h) t
 
-        let did_win (st : State.t) (p_id : player_id) : bool =
+(* assumes house not busted *)
+(* assumes player not busted *)
+let did_win (st : State.t) (p_id : player_id) : bool =
+  let (h, _) = st.house in
+  let (player, _, _) = get_player st p_id in 
+  (get_count h < get_count player)
 
-          let rec who_won (st : State.t) (not_busted : (player_id * int) list) : player_id list = 
+let rec who_won (st : State.t) (not_busted : player_id list) (winners : player_id list) : player_id list = 
+  match not_busted with
+  | [] -> winners
+  | h :: t -> begin 
+      if (did_win st h) then
+        who_won st t (h :: winners)
+      else 
+        who_won st t winners
+    end
 
-            let rec who_lost (st : State.t) (not_busted : (player_id * int) list) : player_id list = 
+let rec who_lost (st : State.t) (busted : player_id list) (losers : player_id list) : player_id list = 
+  match busted with
+  | [] -> losers
+  | h :: t -> begin 
+      if not (did_win st h) then
+        who_lost st t (h :: losers)
+      else 
+        who_lost st t losers
+    end
 
-              let rec moving_money_phase (st : State.t) : State.t =
-                if (dealer_busted st) then
-                  let not_busted = List.map (fun (id, _) -> id) (find_not_busted st) in
-                  let busted = find_busted st in 
-                  let st' = players_all_win st not_busted in
-                  let st'' = players_all_lose st' busted in
-                  st''
-                else
-                  let busted = find_busted st in
-                  let st' = players_all_lose st busted in
-                  let not_busted = find_not_busted st' in 
-                  let winners = who_won st' not_busted in 
-                  let losers = who_lost st' not_busted in
-                  let st'' = players_all_lose st' losers in
-                  let st''' = players_all_win st'' winners in
-                  st'''
-
+let rec moving_money_phase (st : State.t) : State.t =
+  if (dealer_busted st) then
+    let not_busted = find_not_busted st in
+    let busted = find_busted st in 
+    let st' = players_all_win st not_busted in
+    let st'' = players_all_lose st' busted in
+    st''
+  else
+    let busted = find_busted st in
+    let st' = players_all_lose st busted in
+    let not_busted = find_not_busted st' in 
+    let winners = who_won st' not_busted [] in 
+    let losers = who_lost st' not_busted [] in
+    let st'' = players_all_lose st' losers in
+    let st''' = players_all_win st'' winners in
+    st'''
 
 let rec game_body (st : State.t) : State.t = 
   let len = List.length st.players in 
@@ -131,10 +172,12 @@ let rec game_body (st : State.t) : State.t =
   let st'' = dealing_phase st' 0 len in 
   (* playing *)
   print_dealer st'';
-  let st''' = playing_phase st'' len len in  
-  st'''
-
-(* moving money *)
+  let st''' = playing_phase st'' len len in 
+  (* moving money *)
+  let st'''' = moving_money_phase st''' in 
+  (* reset phase *)
+  let st''''' = reset_round st'''' in 
+  game_body st'''''
 
 
 let main () =

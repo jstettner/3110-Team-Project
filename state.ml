@@ -96,6 +96,18 @@ let new_game (player_num : int) (shuffle_amt : int) : t =
     turn=0;
   }
 
+let reset_round (st : t) : t =
+  let players' = List.map (fun (p, _, _) -> (new_round p, 0, false)) st.players in
+  let (house, _) = st.house in 
+  let house' = (new_round house, false) in
+  {
+    players=players';
+    deck=st.deck;
+    house=house';
+    turn=0;
+  }
+
+
 let change_money (st : t) (p_id : player_id) (money : player_money) : t =
   {
     players= (
@@ -151,11 +163,19 @@ let get_bet (st : t) (player : player_id) : bet =
 let hit_helper (player: Player.t) (c: card) : Player.t = 
   ((player |> Player.add_to_hand) c |> Player.inc_count) (Deck.val_of c)
 
+let new_deck (st : t) : t = 
+  {
+    players=st.players;
+    deck=(Deck.shuffle new_deck);
+    house=st.house;
+    turn=st.turn;
+  }
+
 (* pre: deck not empty *)
-let hit (player : player_id) (st: t) : t =
+let rec hit (player : player_id) (st: t) : t =
   (* add to player hand *)
   match Deck.choose st.deck with
-  | None -> failwith("failed precondition")
+  | None -> hit player (new_deck st)
   | Some (new_card, new_deck) -> begin
       let st' = 
         {
@@ -172,9 +192,9 @@ let hit (player : player_id) (st: t) : t =
       st'
     end
 
-let dealer_hit (st: t) : t =
+let rec dealer_hit (st: t) : t =
   match Deck.choose st.deck with
-  | None -> failwith("failed precondition")
+  | None -> dealer_hit (new_deck st)
   | Some (new_card, new_deck) -> begin
       let (dealer, bust) = st.house in 
       let st' = 
