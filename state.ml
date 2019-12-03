@@ -96,6 +96,19 @@ let new_game (player_num : int) (shuffle_amt : int) : t =
     turn=0;
   }
 
+let change_money (st : t) (p_id : player_id) (money : player_money) : t =
+  {
+    players= (
+      List.map (fun (ply, bt, bust) -> 
+          if Player.get_id ply = p_id then (set_cash ply money, bt, bust) else (ply, bt, bust)
+        ) st.players
+    );
+    deck=st.deck;
+    house=st.house;
+    turn=st.turn;
+  }
+
+
 let bust_player (st : t) (p_id: player_id) : t =
   if p_id = 0 then
     let (dealer, _) = st.house in 
