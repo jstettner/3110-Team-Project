@@ -31,6 +31,14 @@ let get_cash (p: t) : player_money =
 let get_hand (p: t) : card list =
   p.hand
 
+let set_cash (p: t) (money: int) : t =
+  {
+    id = p.id;
+    hand = p.hand;
+    count = p.count;
+    cash = money;
+  }
+
 let new_round (p: t) : t = 
   {
     id=p.id;

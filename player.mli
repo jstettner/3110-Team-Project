@@ -21,6 +21,8 @@ val get_cash : t -> player_money
 
 val get_hand : t -> card list
 
+val set_cash : t -> player_money -> t
+
 val new_round : t -> t
 
 val add_to_hand : t -> card -> t

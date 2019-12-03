@@ -78,6 +78,26 @@ let rec playing_phase (st: State.t) (current_player: player_id) (player_count: i
         )
     end
 
+let rec find_winner (st : State.t) (players : player_id list) (max_score : int) (current_winner : player_id list) : player_id list =
+  match players with 
+  | [] -> current_winner
+  | h :: t -> let (player, _, _) = get_player st h in 
+    if player.count > max_score && player.count <= 21 then find_winner st t player.count [h]
+    else if player.count = max_score && player.count <= 21 then find_winner st t player.count (h :: current_winner)
+    else find_winner st t max_score current_winner
+
+let rec moving_money (st : State.t) (current_player : player_id) (player_count : int) : State.t =
+  if current_player < 0 then st 
+  else begin
+    let (player, bet, bust) = get_player st current_player in
+    if bust then
+      let st' = (change_money st current_player ((get_cash player) - bet)) in 
+      moving_money st' (current_player - 1) player_count
+    else let st' = change_money st current_player ((get_cash player) - bet) in 
+      moving_money st' (current_player - 1) player_count
+  end
+
+
 let rec game_body (st : State.t) : State.t = 
   let len = List.length st.players in 
   (* betting *)
