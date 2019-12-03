@@ -2,4 +2,6 @@ To test the modules, run `make build` and then in utop `#use` either "player.ml"
 
 You can then test their functions.
 
+To play the game, run `make play` and follow the on-screen prompts.
+
 `make clean` deletes the old build file. 
