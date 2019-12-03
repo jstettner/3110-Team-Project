@@ -78,6 +78,51 @@ let rec playing_phase (st: State.t) (current_player: player_id) (player_count: i
         )
     end
 
+let rec find_busted (st : State.t) : player_id list =
+  let busted = List.filter (fun (_, _, bust) -> bust) st.players in 
+  List.map (fun (p, _, _) -> p.id) busted
+
+let rec find_not_busted (st : State.t) : (player_id * int) list = 
+  let not_busted = List.filter (fun (_, _, bust) -> (not bust)) st.players in 
+  List.map (fun (p, _, _) -> (p.id, p.count)) not_busted
+
+let rec dealer_busted (st : State.t) : bool =
+  let (_, bust) = st.house in 
+  bust
+
+let rec player_win (st : State.t) (p_id : player_id) : State.t =
+
+
+  let rec player_loss (st : State.t) (p_id : player_id) : State.t =
+
+    let rec players_all_win (st : State.t) (p_ids : player_id list) : State.t =
+
+      let rec players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
+
+        let did_win (st : State.t) (p_id : player_id) : bool =
+
+          let rec who_won (st : State.t) (not_busted : (player_id * int) list) : player_id list = 
+
+            let rec who_lost (st : State.t) (not_busted : (player_id * int) list) : player_id list = 
+
+              let rec moving_money_phase (st : State.t) : State.t =
+                if (dealer_busted st) then
+                  let not_busted = List.map (fun (id, _) -> id) (find_not_busted st) in
+                  let busted = find_busted st in 
+                  let st' = players_all_win st not_busted in
+                  let st'' = players_all_lose st' busted in
+                  st''
+                else
+                  let busted = find_busted st in
+                  let st' = players_all_lose st busted in
+                  let not_busted = find_not_busted st' in 
+                  let winners = who_won st' not_busted in 
+                  let losers = who_lost st' not_busted in
+                  let st'' = players_all_lose st' losers in
+                  let st''' = players_all_win st'' winners in
+                  st'''
+
+
 let rec game_body (st : State.t) : State.t = 
   let len = List.length st.players in 
   (* betting *)
