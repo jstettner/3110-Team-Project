@@ -25,6 +25,14 @@ let get_id (p: t) : player_id =
 let get_count (p: t) : player_count =
   p.count
 
+let sub_count_ten (p: t) : t =
+  {
+    id= p.id;
+    hand= p.hand;
+    count= p.count - 10;
+    cash = p.cash;
+  }
+
 let get_cash (p: t) : player_money =
   p.cash
 

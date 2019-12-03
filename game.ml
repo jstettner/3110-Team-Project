@@ -9,7 +9,7 @@ let rec betting_phase (st: State.t) (current_better: player_id) (player_count: i
   if current_better > player_count then
     st 
   else (
-    let (player, _, _) = get_player st current_better in 
+    let (player, _, _, _) = get_player st current_better in 
     let current_cash = player |> get_cash in 
     (* if current_cash = 0 then 
        begin 
@@ -23,15 +23,21 @@ let rec betting_phase (st: State.t) (current_better: player_id) (player_count: i
     print_string  "> ";
     match read_line () with
     | exception e -> st
-    | bet -> begin 
-        if (int_of_string bet) > current_cash then (
-          (* print_endline ("Cash: "^(string_of_int current_cash)); *)
+    | bet -> begin
+        try
+          if (int_of_string bet) > current_cash then (
+            (* print_endline ("Cash: "^(string_of_int current_cash)); *)
 
-          ANSITerminal.(print_string [red] ("You can't afford to bet that much."));
-          betting_phase st current_better player_count)
-        else
-          let st' = set_bet st (int_of_string bet) current_better in 
-          betting_phase st' (current_better + 1) player_count
+            ANSITerminal.(print_string [red] ("You can't afford to bet that much."));
+            betting_phase st current_better player_count)
+          else
+            let st' = set_bet st (int_of_string bet) current_better in 
+            betting_phase st' (current_better + 1) player_count
+        with e -> begin
+            ANSITerminal.(print_string [red]
+                            ("\nNot a valid int, try again."));
+            betting_phase (st) (current_better) (player_count)
+          end
       end
   )
 
@@ -48,11 +54,13 @@ let rec playing_phase (st: State.t) (current_player: player_id) (player_count: i
   if current_player < 0 then
     st 
   else if current_player = 0 then
-    let (dealer, busted) = st.house in
-    if get_count dealer > 21 then (
-      ANSITerminal.(print_string [green]
-                      "\n\nThe dealer busted!\n");
-      playing_phase (bust_player st 0) (current_player - 1) player_count)
+    let (dealer, busted, hard) = st.house in
+    if get_count dealer > 21 then 
+      if hard then
+        ( ANSITerminal.(print_string [green]
+                          "\n\nThe dealer busted!\n");
+          playing_phase (bust_player st 0) (current_player - 1) player_count)
+      else playing_phase (make_dealer_hard st) (current_player) player_count
     else if get_count dealer <= 16 then (
       ANSITerminal.(print_string [blue ]
                       ("\n\nThe dealers hits on "^(dealer |> get_count |> string_of_int)^".\n"));
@@ -62,12 +70,15 @@ let rec playing_phase (st: State.t) (current_player: player_id) (player_count: i
                       ("\n\nThe dealers stands on "^(dealer |> get_count |> string_of_int)^".\n"));
       playing_phase (st) (current_player - 1) player_count)
   else
-    let (player, _, _) = get_player st current_player in 
+    let (player, _, _, hard) = get_player st current_player in 
     let count = get_count player in 
-    if count > 21 then (
-      ANSITerminal.(print_string [red]
-                      ("\n\nPlayer "^(string_of_int current_player)^" busted.\n"));
-      playing_phase (bust_player st current_player) (current_player - 1) player_count)
+    if count > 21 then begin
+      if hard then (
+        ANSITerminal.(print_string [red]
+                        ("\n\nPlayer "^(string_of_int current_player)^" busted.\n"));
+        playing_phase (bust_player st current_player) (current_player - 1) player_count)
+      else playing_phase (make_player_hard st player.id) (current_player) player_count 
+    end
     else begin
       ANSITerminal.(print_string [cyan] ("Current player: "^(string_of_int current_player)^"\n"));
       print st current_player;
@@ -85,28 +96,28 @@ let rec playing_phase (st: State.t) (current_player: player_id) (player_count: i
     end
 
 let rec find_busted (st : State.t) : player_id list =
-  let busted = List.filter (fun (_, _, bust) -> bust) st.players in 
-  List.map (fun (p, _, _) -> p.id) busted
+  let busted = List.filter (fun (_, _, bust, _) -> bust) st.players in 
+  List.map (fun (p, _, _, _) -> p.id) busted
 
 let rec find_not_busted (st : State.t) : player_id list = 
-  let not_busted = List.filter (fun (_, _, bust) -> (not bust)) st.players in 
-  List.map (fun (p, _, _) -> p.id) not_busted
+  let not_busted = List.filter (fun (_, _, bust, _) -> (not bust)) st.players in 
+  List.map (fun (p, _, _, _) -> p.id) not_busted
 
 let rec dealer_busted (st : State.t) : bool =
-  let (_, bust) = st.house in 
+  let (_, bust, _) = st.house in 
   bust
 
 let blackjack (st : State.t) (p_id : player_id) : bool =
-  let (player, _, _) = get_player st p_id in 
+  let (player, _, _, _) = get_player st p_id in 
   if get_count player == 21 then true else false
 
 let player_win (st : State.t) (p_id : player_id) : State.t =
-  let (player, _, _) = get_player st p_id in  
+  let (player, _, _, _) = get_player st p_id in  
   let new_cash = (get_cash player) + (get_bet st p_id) in 
   change_money st p_id new_cash
 
 let player_loss (st : State.t) (p_id : player_id) : State.t =
-  let (player, _, _) = get_player st p_id in 
+  let (player, _, _, _) = get_player st p_id in 
   let new_cash = (get_cash player) - (get_bet st p_id) in 
   change_money st p_id new_cash
 
@@ -123,8 +134,8 @@ let rec players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
 (* assumes house not busted *)
 (* assumes player not busted *)
 let did_win (st : State.t) (p_id : player_id) : bool =
-  let (h, _) = st.house in
-  let (player, _, _) = get_player st p_id in 
+  let (h, _, _) = st.house in
+  let (player, _, _, _) = get_player st p_id in 
   (get_count h < get_count player)
 
 let rec who_won (st : State.t) (not_busted : player_id list) (winners : player_id list) : player_id list = 
