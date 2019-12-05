@@ -78,7 +78,6 @@ let rec playing_phase (st: State.t) (current_player: player_id) (player_count: i
         )
     end
 
-<<<<<<< HEAD
 let rec find_busted (st : State.t) : player_id list =
   let busted = List.filter (fun (_, _, bust) -> bust) st.players in 
   List.map (fun (p, _, _) -> p.id) busted
@@ -122,26 +121,6 @@ let rec player_win (st : State.t) (p_id : player_id) : State.t =
                   let st'' = players_all_lose st' losers in
                   let st''' = players_all_win st'' winners in
                   st'''
-=======
-let rec find_winner (st : State.t) (players : player_id list) (max_score : int) (current_winner : player_id list) : player_id list =
-  match players with 
-  | [] -> current_winner
-  | h :: t -> let (player, _, _) = get_player st h in 
-    if player.count > max_score && player.count <= 21 then find_winner st t player.count [h]
-    else if player.count = max_score && player.count <= 21 then find_winner st t player.count (h :: current_winner)
-    else find_winner st t max_score current_winner
-
-let rec moving_money (st : State.t) (current_player : player_id) (player_count : int) : State.t =
-  if current_player < 0 then st 
-  else begin
-    let (player, bet, bust) = get_player st current_player in
-    if bust then
-      let st' = (change_money st current_player ((get_cash player) - bet)) in 
-      moving_money st' (current_player - 1) player_count
-    else let st' = change_money st current_player ((get_cash player) - bet) in 
-      moving_money st' (current_player - 1) player_count
-  end
->>>>>>> 28192beb3e2a7f4cd6f89df7896efe21fa2f04a8
 
 
 let rec game_body (st : State.t) : State.t = 

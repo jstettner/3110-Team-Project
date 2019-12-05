@@ -110,7 +110,14 @@ let rec playing_phase (st: State.t) (current_player: player_id)
                                  "\n"));
                 playing_phase st (current_player) player_count false
               end
-            else 
+            else if get_cash player < (2*bet) then 
+              begin
+                ANSITerminal.(print_string [red] 
+                                ("Not enough cash to double down." ^
+                                 "\n"));
+                playing_phase st (current_player) player_count false
+              end
+            else
               begin
                 let st' = set_bet st (2*bet) current_player in
                 playing_phase (hit (current_player) st') (current_player)
