@@ -24,6 +24,7 @@ let (--) (i : int) (j : int) : int list =
       1 <= n <= 13. There can be no identical cards in the list. *)
 type t = card list
 
+(** to be documented *)
 let rec generate_cards_of_suit 
     (st : suit) 
     (loop : int list) 
