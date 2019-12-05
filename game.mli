@@ -7,7 +7,7 @@ val betting_phase : State.t -> player_id -> int -> State.t
 
 val dealing_phase : State.t -> player_id -> int -> State.t
 
-val playing_phase : State.t -> player_id -> int -> State.t 
+val playing_phase : State.t -> player_id -> int -> bool -> State.t 
 
 val find_busted : State.t -> player_id list 
 
