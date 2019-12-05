@@ -51,7 +51,7 @@ let rec dealing_phase (st: State.t) (current_player: player_id)
 (** [playing_phase st current_player player_count] is the state after
     each player finishes hitting and standing. *)
 let rec playing_phase (st: State.t) (current_player: player_id) 
-    (player_count: int) : State.t =
+    (player_count: int) (doubled : bool) : State.t =
   if current_player < 0 then
     st 
   else if current_player = 0 then
@@ -60,20 +60,22 @@ let rec playing_phase (st: State.t) (current_player: player_id)
       if hard then
         ( ANSITerminal.(print_string [green]
                           "\n\nThe dealer busted!\n");
-          playing_phase (bust_player st 0) (current_player - 1) player_count)
-      else playing_phase (make_dealer_hard st) (current_player) player_count
+          playing_phase (bust_player st 0) (current_player - 1) player_count 
+            false)
+      else playing_phase (make_dealer_hard st) (current_player) player_count 
+          false
     else if get_count dealer <= 16 then (
       ANSITerminal.(print_string [blue ]
                       ("\n\nThe dealers hits on "^(dealer |> get_count 
                                                    |> string_of_int)^".\n"));
-      playing_phase (st |> dealer_hit) (current_player) player_count)
+      playing_phase (st |> dealer_hit) (current_player) player_count) false
     else(
       ANSITerminal.(print_string [blue ]
                       ("\n\nThe dealers stands on "^(dealer |> get_count 
                                                      |> string_of_int)^".\n"));
-      playing_phase (st) (current_player - 1) player_count)
+      playing_phase (st) (current_player - 1) player_count false)
   else
-    let (player, _, _, hard) = get_player st current_player in 
+    let (player, bet, _, hard) = get_player st current_player in 
     let count = get_count player in 
     if count > 21 then begin
       if hard then (
@@ -81,25 +83,42 @@ let rec playing_phase (st: State.t) (current_player: player_id)
                         ("\n\nPlayer "^
                          (string_of_int current_player)^" busted.\n"));
         playing_phase (bust_player st current_player) (current_player - 1) 
-          player_count)
+          player_count false)
       else playing_phase (make_player_hard st player.id) (current_player) 
-          player_count 
+          player_count false 
     end
     else begin
       ANSITerminal.(print_string [cyan] ("Current player: "^(string_of_int current_player)^"\n"));
-      print st current_player;
-      ANSITerminal.(print_string [blue] ("Your count is "^(string_of_int count)^".\nDo you want to hit or stand?\n"));
-      print_string "> ";
-      let input = read_line () in
-      try let parsed = parse input in
-        match parsed with
-        | Hit -> playing_phase (hit current_player st) (current_player) 
-                   player_count
-        | Stand -> playing_phase st (current_player - 1) player_count
-      with Malformed -> (
-          print_endline "Not a valid command";
-          playing_phase st (current_player) player_count
-        )
+      if doubled then (print st current_player; 
+                       playing_phase st (current_player - 1) player_count false)
+      else begin
+        print st current_player;
+        ANSITerminal.(print_string [blue] ("Your count is "^(string_of_int count)^".\nDo you want to hit or stand?\n"));
+        print_string "> ";
+        let input = read_line () in
+        try let parsed = parse input in
+          match parsed with
+          | Hit -> playing_phase (hit current_player st) (current_player) 
+                     player_count false
+          | Stand -> playing_phase st (current_player - 1) player_count false
+          | Double -> if Deck.length player.hand > 2 then 
+              begin
+                ANSITerminal.(print_string [red] 
+                                ("Cannot double down with more than 2 cards." ^
+                                 "\n"));
+                playing_phase st (current_player) player_count false
+              end
+            else 
+              begin
+                let st' = set_bet st (2*bet) current_player in
+                playing_phase (hit (current_player) st') (current_player)
+                  player_count true 
+              end
+        with Malformed -> (
+            print_endline "Not a valid command";
+            playing_phase st (current_player) player_count false
+          )
+      end
     end
 
 (** [find_busted st] is the list containing player_id of each player who
@@ -211,7 +230,7 @@ let rec game_body (st : State.t) : State.t =
   let st' = betting_phase st 1 len in
   let st'' = dealing_phase st' 0 len in 
   print_dealer st'';
-  let st''' = playing_phase st'' len len in 
+  let st''' = playing_phase st'' len len false in 
   let st'''' = moving_money_phase st''' in 
   let st''''' = reset_round st'''' in 
   game_body st'''''
