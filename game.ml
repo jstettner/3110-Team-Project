@@ -234,8 +234,15 @@ let rec game_body (st : State.t) : State.t =
   print_dealer st'';
   let st''' = playing_phase st'' len len in 
   let st'''' = moving_money_phase st''' in 
-  let st''''' = reset_round st'''' in 
-  game_body st'''''
+  let st''''' = reset_round st'''' in
+  ANSITerminal.(print_string [green] ("Round complete. Would you like to continue? y/n > "));
+  let resp = read_line () in (
+    if resp = "n" then (
+      ANSITerminal.(print_string [red] ("Quitting...")); st'''''
+    )
+    else
+      game_body st'''''
+  )
 
 
 let main () =
