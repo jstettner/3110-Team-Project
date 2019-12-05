@@ -100,7 +100,7 @@ let rec playing_phase (st: State.t) (current_player: player_id)
         print st current_player;
         ANSITerminal.(print_string [blue] ("Your count is "^
                                            (string_of_int count)
-                                           ^".\nDo you want to hit or stand?\n"
+                                           ^".\nDo you want to hit, stand, or double down?\n"
                                           ));
         print_string "> ";
         let input = read_line () in
