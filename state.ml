@@ -116,7 +116,8 @@ let new_game (player_num : int) (shuffle_amt : int) : t =
   }
 
 let reset_round (st : t) : t =
-  let players' = List.map (fun (p, _, _, _) -> (new_round p, 0, false, true)) st.players in
+  let players' = List.map (fun (p, _, _, _) -> (new_round p, 0, false, true)) 
+      st.players in
   let (house, _, _) = st.house in 
   let house' = (new_round house, false, true) in
   {
@@ -131,7 +132,8 @@ let change_money (st : t) (p_id : player_id) (money : player_money) : t =
   {
     players= (
       List.map (fun (ply, bt, bust, hard) -> 
-          if Player.get_id ply = p_id then (set_cash ply money, bt, bust, hard) else (ply, bt, bust, hard)
+          if Player.get_id ply = p_id then (set_cash ply money, bt, bust, hard) 
+          else (ply, bt, bust, hard)
         ) st.players
     );
     deck=st.deck;
@@ -153,7 +155,8 @@ let bust_player (st : t) (p_id: player_id) : t =
     {
       players= (
         List.map (fun (ply, bt, bust, hard) -> 
-            if Player.get_id ply = p_id then (ply, bt, true, hard) else (ply, bt, bust, hard)
+            if Player.get_id ply = p_id then (ply, bt, true, hard) else 
+              (ply, bt, bust, hard)
           ) st.players
       );
       deck=st.deck;
@@ -166,7 +169,8 @@ let set_bet (st : t) (zet : bet) (player : player_id) : t =
   {
     players= (
       List.map (fun (ply, bt, bust, hard) -> 
-          if Player.get_id ply = player then (ply, zet, bust, hard) else (ply, bt, bust, hard)
+          if Player.get_id ply = player then (ply, zet, bust, hard) else 
+            (ply, bt, bust, hard)
         ) st.players
     );
     deck=st.deck;
@@ -200,7 +204,9 @@ let rec hit (player : player_id) (st: t) : t =
         {
           players= (
             List.map (fun (ply, bt, bust, hard) -> 
-                if Player.get_id ply = player then (hit_helper ply new_card, bt, bust, false) else (ply, bt, bust, hard)
+                if Player.get_id ply = player then 
+                  (hit_helper ply new_card, bt, bust, false) else 
+                  (ply, bt, bust, hard)
               ) st.players
           );
           deck=new_deck;
@@ -211,7 +217,9 @@ let rec hit (player : player_id) (st: t) : t =
         {
           players= (
             List.map (fun (ply, bt, bust, hard) -> 
-                if Player.get_id ply = player then (hit_helper ply new_card, bt, bust, hard) else (ply, bt, bust, hard)
+                if Player.get_id ply = player then 
+                  (hit_helper ply new_card, bt, bust, hard) else 
+                  (ply, bt, bust, hard)
               ) st.players
           );
           deck=new_deck;
@@ -254,7 +262,9 @@ let make_player_hard (st : t) (p_id : player_id) : t =
   {
     players= (
       List.map (fun (ply, bt, bust, hard) -> 
-          if Player.get_id ply = p_id then (Player.sub_count_ten ply, bt, bust, true) else (ply, bt, bust, hard)
+          if Player.get_id ply = p_id then 
+            (Player.sub_count_ten ply, bt, bust, true) else 
+            (ply, bt, bust, hard)
         ) st.players
     );
     deck=st.deck;

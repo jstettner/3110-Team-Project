@@ -16,6 +16,10 @@ type card = {
 (** [t] is the type of deck. *)
 type t = card list
 
+(** [generate_cards_of_suit] is a list of cards with suit [st] and values
+    corresponding to ints in the [loop] list. *)
+val generate_cards_of_suit : suit -> int list -> card list -> card list 
+
 (** [new_deck] is a standard playing card deck with 52 cards. *)
 val new_deck : t
 
