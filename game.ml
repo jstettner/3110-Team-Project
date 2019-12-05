@@ -13,7 +13,8 @@ let rec betting_phase (st: State.t) (current_better: player_id)
     let (player, _, _, _) = get_player st current_better in 
     let current_cash = player |> get_cash in 
     ANSITerminal.(print_string [green]
-                    ("\n\nPlayer "^(string_of_int current_better)^", enter your bet.\n"));
+                    ("\n\nPlayer "^
+                     (string_of_int current_better)^", enter your bet.\n"));
     print_endline ("You have $"^(string_of_int current_cash)^".");
     print_string  "> ";
     match read_line () with
@@ -21,7 +22,8 @@ let rec betting_phase (st: State.t) (current_better: player_id)
     | bet -> begin
         try
           if (int_of_string bet) > current_cash then (
-            ANSITerminal.(print_string [red] ("You can't afford to bet that much."));
+            ANSITerminal.(print_string [red] 
+                            ("You can't afford to bet that much."));
             betting_phase st current_better player_count)
           else
             let st' = set_bet st (int_of_string bet) current_better in 
@@ -59,18 +61,18 @@ let rec playing_phase (st: State.t) (current_player: player_id)
     if get_count dealer > 21 then 
       if hard then
         ( ANSITerminal.(print_string [green]
-                          "\n\nThe dealer busted!\n");
+                          "\nThe dealer busted!\n");
           playing_phase (bust_player st 0) (current_player - 1) player_count)
       else playing_phase (make_dealer_hard st) (current_player) player_count
     else if get_count dealer <= 16 then (
-      ANSITerminal.(print_string [blue ]
-                      ("\n\nThe dealers hits on "^(dealer |> get_count 
-                                                   |> string_of_int)^".\n"));
+      ANSITerminal.(print_string [blue]
+                      ("\nThe dealers hits on "^(dealer |> get_count 
+                                                 |> string_of_int)^".\n"));
       playing_phase (st |> dealer_hit) (current_player) player_count)
     else(
-      ANSITerminal.(print_string [blue ]
-                      ("\n\nThe dealers stands on "^(dealer |> get_count 
-                                                     |> string_of_int)^".\n"));
+      ANSITerminal.(print_string [blue]
+                      ("\nThe dealers stands on "^(dealer |> get_count 
+                                                   |> string_of_int)^".\n"));
       playing_phase (st) (current_player - 1) player_count)
   else
     let (player, _, _, hard) = get_player st current_player in 
@@ -78,17 +80,19 @@ let rec playing_phase (st: State.t) (current_player: player_id)
     if count > 21 then begin
       if hard then (
         ANSITerminal.(print_string [red]
-                        ("\n\nPlayer "^
-                         (string_of_int current_player)^" busted.\n"));
+                        ("\nPlayer "^
+                         (string_of_int current_player)^" busted.\n\n"));
         playing_phase (bust_player st current_player) (current_player - 1) 
           player_count)
       else playing_phase (make_player_hard st player.id) (current_player) 
           player_count 
     end
     else begin
-      ANSITerminal.(print_string [cyan] ("Current player: "^(string_of_int current_player)^"\n"));
+      ANSITerminal.(print_string [cyan] ("Current player: "^
+                                         (string_of_int current_player)^"\n"));
       print st current_player;
-      ANSITerminal.(print_string [blue] ("Your count is "^(string_of_int count)^".\nDo you want to hit or stand?\n"));
+      ANSITerminal.(print_string [blue] ("Your count is "^(string_of_int count)^
+                                         ".\nDo you want to hit or stand?\n"));
       print_string "> ";
       let input = read_line () in
       try let parsed = parse input in
@@ -144,14 +148,31 @@ let player_loss (st : State.t) (p_id : player_id) : State.t =
 let rec players_all_win (st : State.t) (p_ids : player_id list) : State.t =
   match p_ids with
   | [] -> st
-  | h :: t ->  players_all_win (player_win st h) t
+  | h :: t ->  (
+      let (player, _, _, _) = get_player st h in 
+      ANSITerminal.(print_string [green] ("Player "^(string_of_int h)^" won $"^
+                                          string_of_int (get_bet st h) ^
+                                          " and has a total of $"^
+                                          string_of_int 
+                                            (get_cash player + (get_bet st h))^
+                                          "\n"));
+      players_all_win (player_win st h) t
+    )
 
 (** [players_all_lose st p_ids] is state with updated players with player_id in
     [p_ids] after deducting the players' bet amounts from their money totals. *)
 let rec players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
   match p_ids with
   | [] -> st
-  | h :: t ->  players_all_lose (player_loss st h) t
+  | h :: t ->  (
+      let (player, _, _, _) = get_player st h in 
+      ANSITerminal.(print_string [red] ("Player "^(string_of_int h)^" lost $"^ 
+                                        string_of_int (get_bet st h) ^
+                                        " and has a total of $"^string_of_int 
+                                          (get_cash player - (get_bet st h))^
+                                        "\n"));
+      players_all_lose (player_loss st h) t
+    )
 
 (** [did_win st p_id] is [true] if player scored higher than the house and
     [false otherwise]. Assumes house and player did not bust. *)
@@ -175,9 +196,9 @@ let rec who_won (st : State.t) (not_busted : player_id list)
 
 (** [who_lost st busted] is list containing player_id of players from [busted] 
     who did not win over the house in the playing phase. *)
-let rec who_lost (st : State.t) (busted : player_id list) 
+let rec who_lost (st : State.t) (not_busted : player_id list) 
     (losers : player_id list) : player_id list = 
-  match busted with
+  match not_busted with
   | [] -> losers
   | h :: t -> begin 
       if not (did_win st h) then
