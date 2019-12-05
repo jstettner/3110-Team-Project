@@ -59,9 +59,9 @@ let rec playing_phase (st: State.t) (current_player: player_id)
   else if current_player = 0 then
     let (dealer, busted, hard) = st.house in
     if get_count dealer > 21 then 
-      if hard then
-        ( ANSITerminal.(print_string [green]
-                          "\n\nThe dealer busted!\n");
+      if hard then 
+        ( print_dealer st; ANSITerminal.(print_string [green]
+                                           "\n\nThe dealer busted!\n");
           playing_phase (bust_player st 0) (current_player - 1) player_count 
             false)
       else playing_phase (make_dealer_hard st) (current_player) player_count 
@@ -80,22 +80,28 @@ let rec playing_phase (st: State.t) (current_player: player_id)
     let (player, bet, _, hard) = get_player st current_player in 
     let count = get_count player in 
     if count > 21 then begin
-      if hard then (
-        ANSITerminal.(print_string [red]
-                        ("\nPlayer "^
-                         (string_of_int current_player)^" busted.\n\n"));
-        playing_phase (bust_player st current_player) (current_player - 1) 
-          player_count false)
+      if hard then (print st current_player;
+                    ANSITerminal.(print_string [red]
+                                    ("\nPlayer "^
+                                     (string_of_int current_player)^
+                                     " busted.\n\n"));
+                    playing_phase (bust_player st current_player) 
+                      (current_player - 1) 
+                      player_count false)
       else playing_phase (make_player_hard st player.id) (current_player) 
           player_count false 
     end
     else begin
-      ANSITerminal.(print_string [cyan] ("Current player: "^(string_of_int current_player)^"\n"));
+      ANSITerminal.(print_string [cyan] ("Current player: "^
+                                         (string_of_int current_player)^"\n"));
       if doubled then (print st current_player; 
                        playing_phase st (current_player - 1) player_count false)
       else begin
         print st current_player;
-        ANSITerminal.(print_string [blue] ("Your count is "^(string_of_int count)^".\nDo you want to hit or stand?\n"));
+        ANSITerminal.(print_string [blue] ("Your count is "^
+                                           (string_of_int count)
+                                           ^".\nDo you want to hit or stand?\n"
+                                          ));
         print_string "> ";
         let input = read_line () in
         try let parsed = parse input in
