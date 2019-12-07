@@ -109,13 +109,72 @@ let choose_tests = [Some
                         {suit = Club; value = 1}]);
 
                    ]
+
+
+let make_val_of_test
+    (name : string) 
+    (card: Deck.card)
+    (expected_output : int) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output (Deck.val_of card))
+
+let val_of_tests = [
+  make_val_of_test
+    "Ace" {suit = Heart; value = 1} 11;
+  make_val_of_test
+    "Ten" {suit = Heart; value = 10} 10;
+  make_val_of_test
+    "Assert Jack value is 10" {suit = Heart; value = 11} 10;
+  make_val_of_test
+    "Assert Queen value is 10" {suit = Heart; value = 12} 10;
+  make_val_of_test
+    "Assert King Value is 10" {suit = Heart; value = 13} 10;
+
+]
+
+let make_length_test
+    (name : string) 
+    (deck: Deck.t)
+    (expected_output : int) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output (Deck.length deck))
+
+let length_tests =
+  [
+    make_length_test "standard deck = 52" standard_deck 52;
+    make_length_test "length one deck" [{suit = Heart; value = 1}] 1;
+  ]
+
+let make_command_test
+    (name : string) 
+    (str: string) 
+    (expected_output : command) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output (parse str))
+
+let command_tests =
+  [
+    make_command_test "Testing Hit command" "Hit" Hit;
+    make_command_test "Testing h command" "h" Hit;
+    make_command_test "Testing hit command" "hit" Hit;
+    make_command_test "Testing Double Down Command" "Double Down" Double;
+    make_command_test "Testing Double Down Command" "double down" Double;
+    make_command_test "Testing Double Down Command" "Double" Double;
+    make_command_test "Testing Double Down Command" "Down" Double;
+    make_command_test "Testing Double Down Command" "double" Double;
+    make_command_test "Testing Double Down Command" "down" Double;
+    make_command_test "Testing Double Down Command" "d" Double;
+    "Malformed"    >:: (fun _ -> assert_raises (Malformed) (fun () -> parse "apple"));
+  ]
+
 let suite =
   "test suite for A2" >::: List.flatten [
     cards_of_suit_tests;
     new_deck_test;
+    val_of_tests;
+    length_tests;
+    command_tests;
   ]
-
-
 
 let _ = run_test_tt_main suite
 
