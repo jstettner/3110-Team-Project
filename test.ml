@@ -186,13 +186,43 @@ let make_new_player_test
 let player_1 = 
   {id = 1; hand = []; count = 0; cash = 200}
 let player_2 = 
-  {id = 1; hand = []; count = 0; cash = 500}
+  {id = 2; hand = []; count = 0; cash = 500}
+
+let player_3 = 
+  {id = 3; hand = []; count = 10; cash = 500}
 
 let new_player_test = 
   [
     make_new_player_test "Player 1 200 dollars" 1 200 player_1;
-    make_new_player_test "Player 2 500 dollars" 1 500 player_2;
+    make_new_player_test "Player 2 500 dollars" 2 500 player_2;
   ]
+
+let make_get_id_test
+    (name : string) 
+    (player : Player.t) 
+    (expected_output : player_id) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output (get_id player))
+
+let get_id_tests = 
+  [
+    make_get_id_test "Player 1 id" player_1 1;
+    make_get_id_test "Player 2 id" player_2 2;
+  ]
+
+let make_get_count_test
+    (name : string) 
+    (player : Player.t) 
+    (expected_output : player_count) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output (get_count player))
+
+let get_count_tests = 
+  [
+    make_get_count_test "Player 1 count is 0" player_1 0;
+    make_get_count_test "Player 1 count is 0" player_3 10;
+  ]
+
 
 let suite =
   "test suite for A2" >::: List.flatten [
@@ -202,6 +232,8 @@ let suite =
     length_tests;
     command_tests;
     new_player_test;
+    get_id_tests;
+    get_count_tests;
   ]
 
 let _ = run_test_tt_main suite
