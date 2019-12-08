@@ -2,6 +2,7 @@ open OUnit2
 open Deck
 open Command
 open State
+open Player
 (* open Game *)
 
 
@@ -23,9 +24,11 @@ let cards_of_suit_tests =
     make_generate_cards_of_suit_test 
       "One Card"  Heart [1] [] [{suit = Heart; value = 1}];
     make_generate_cards_of_suit_test 
-      "Two Cards"  Heart [1;2] [] [{suit = Heart; value = 2};{suit = Heart; value = 1}];
+      "Two Cards"  Heart [1;2] [] [{suit = Heart; value = 2};
+                                   {suit = Heart; value = 1}];
     make_generate_cards_of_suit_test 
-      "Not starting at 1"  Heart [4; 7; 8] [] [{suit = Heart; value = 8}; {suit = Heart; value = 7};
+      "Not starting at 1"  Heart [4; 7; 8] [] [{suit = Heart; value = 8}; 
+                                               {suit = Heart; value = 7};
                                                {suit = Heart; value = 4}];
     make_generate_cards_of_suit_test 
       "Spade"  Spade [1] [] [{suit = Spade; value = 1}];
@@ -63,9 +66,12 @@ let standard_deck = [{suit = Heart; value = 13}; {suit = Heart; value = 12};
                      {suit = Spade; value = 3}; {suit = Spade; value = 2};
                      {suit = Spade; value = 1}; {suit = Club; value = 13};
                      {suit = Club; value = 12}; {suit = Club; value = 11};
-                     {suit = Club; value = 10}; {suit = Club; value = 9}; {suit = Club; value = 8};
-                     {suit = Club; value = 7}; {suit = Club; value = 6}; {suit = Club; value = 5};
-                     {suit = Club; value = 4}; {suit = Club; value = 3}; {suit = Club; value = 2};
+                     {suit = Club; value = 10}; {suit = Club; value = 9};
+                     {suit = Club; value = 8};
+                     {suit = Club; value = 7}; {suit = Club; value = 6}; 
+                     {suit = Club; value = 5};
+                     {suit = Club; value = 4}; {suit = Club; value = 3}; 
+                     {suit = Club; value = 2};
                      {suit = Club; value = 1}]
 
 let new_deck_test = [
@@ -87,12 +93,14 @@ let choose_tests = [Some
                         {suit = Heart; value = 6}; {suit = Heart; value = 5};
                         {suit = Heart; value = 4}; {suit = Heart; value = 3};
                         {suit = Heart; value = 2}; {suit = Heart; value = 1};
-                        {suit = Diamond; value = 13}; {suit = Diamond; value = 12};
-                        {suit = Diamond; value = 11}; {suit = Diamond; value = 10};
-                        {suit = Diamond; value = 9}; {suit = Diamond; value = 8};
-                        {suit = Diamond; value = 7}; {suit = Diamond; value = 6};
-                        {suit = Diamond; value = 5}; {suit = Diamond; value = 4};
-                        {suit = Diamond; value = 3}; {suit = Diamond; value = 2};
+                        {suit = Diamond; value = 13};
+                        {suit = Diamond; value = 12};
+                        {suit = Diamond; value = 11};
+                        {suit = Diamond; value = 10};
+                        {suit = Diamond; value = 9};{suit = Diamond; value = 8};
+                        {suit = Diamond; value = 7};{suit = Diamond; value = 6};
+                        {suit = Diamond; value = 5};{suit = Diamond; value = 4};
+                        {suit = Diamond; value = 3};{suit = Diamond; value = 2};
                         {suit = Diamond; value = 1}; {suit = Spade; value = 13};
                         {suit = Spade; value = 12}; {suit = Spade; value = 11};
                         {suit = Spade; value = 10}; {suit = Spade; value = 9};
@@ -157,14 +165,33 @@ let command_tests =
     make_command_test "Testing Hit command" "Hit" Hit;
     make_command_test "Testing h command" "h" Hit;
     make_command_test "Testing hit command" "hit" Hit;
-    make_command_test "Testing Double Down Command" "Double Down" Double;
-    make_command_test "Testing Double Down Command" "double down" Double;
-    make_command_test "Testing Double Down Command" "Double" Double;
-    make_command_test "Testing Double Down Command" "Down" Double;
-    make_command_test "Testing Double Down Command" "double" Double;
-    make_command_test "Testing Double Down Command" "down" Double;
-    make_command_test "Testing Double Down Command" "d" Double;
-    "Malformed"    >:: (fun _ -> assert_raises (Malformed) (fun () -> parse "apple"));
+    make_command_test "Testing Doulbe Down command" "Double Down" Double;
+    make_command_test "Testing double down Command" "double down" Double;
+    make_command_test "Testing Double" "Double" Double;
+    make_command_test "Testing Down Command" "Down" Double;
+    make_command_test "Testing double Command" "double" Double;
+    make_command_test "Testing down Command" "down" Double;
+    make_command_test "Testing d Command" "d" Double;
+    "Malformed"    >:: (fun _ -> assert_raises (Malformed) 
+                           (fun () -> parse "Hello"));
+  ]
+let make_new_player_test
+    (name : string) 
+    (id : player_id) 
+    (starting_cash : player_money)
+    (expected_output : Player.t) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output (new_player id starting_cash))
+
+let player_1 = 
+  {id = 1; hand = []; count = 0; cash = 200}
+let player_2 = 
+  {id = 1; hand = []; count = 0; cash = 500}
+
+let new_player_test = 
+  [
+    make_new_player_test "Player 1 200 dollars" 1 200 player_1;
+    make_new_player_test "Player 2 500 dollars" 1 500 player_2;
   ]
 
 let suite =
@@ -174,6 +201,7 @@ let suite =
     val_of_tests;
     length_tests;
     command_tests;
+    new_player_test;
   ]
 
 let _ = run_test_tt_main suite
