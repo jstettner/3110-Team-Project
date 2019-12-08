@@ -223,6 +223,27 @@ let get_count_tests =
     make_get_count_test "Player 1 count is 0" player_3 10;
   ]
 
+let make_set_cash_test
+    (name : string) 
+    (player : Player.t) 
+    (money: int)
+    (expected_output : Player.t) : test = 
+  name >:: (fun _ -> 
+      assert_equal expected_output (set_cash player money))
+
+let player_1_updated = 
+  {id = 1; hand = []; count = 0; cash = 500}
+let player_2_updated = 
+  {id = 2; hand = []; count = 0; cash = 200}
+let player_3_updated = 
+  {id = 3; hand = []; count = 10; cash = 0}
+
+let set_cash_tests = 
+  [
+    make_set_cash_test "Change player 1 cash" player_1 500 player_1_updated;
+    make_set_cash_test "Change player 1 cash" player_2 200 player_2_updated;
+    make_set_cash_test "Change player 1 cash" player_3 0 player_3_updated;
+  ]
 
 let suite =
   "test suite for A2" >::: List.flatten [
@@ -234,6 +255,8 @@ let suite =
     new_player_test;
     get_id_tests;
     get_count_tests;
+    set_cash_tests;
+
   ]
 
 let _ = run_test_tt_main suite
