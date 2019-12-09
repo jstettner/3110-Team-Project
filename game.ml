@@ -108,28 +108,8 @@ let rec splits_playing_phase (st: State.t) (current_player: player_id)
     each player finishes hitting and standing. *)
 let rec playing_phase (st: State.t) (current_player: player_id) 
     (player_count: int) (doubled : bool) : State.t =
-  if current_player < 0 then
+  if current_player <= 0 then
     st 
-  else if current_player = 0 then
-    let (dealer, busted, hard) = st.house in
-    if get_count dealer > 21 then 
-      if hard then 
-        ( print_dealer st; ANSITerminal.(print_string [green]
-                                           "\n\nThe dealer busted!\n");
-          playing_phase (bust_player st 0) (current_player - 1) player_count 
-            false)
-      else playing_phase (make_dealer_hard st) (current_player) player_count 
-          false
-    else if get_count dealer <= 16 then (
-      ANSITerminal.(print_string [blue ]
-                      ("\n\nThe dealers hits on "^(dealer |> get_count 
-                                                   |> string_of_int)^".\n"));
-      playing_phase (st |> dealer_hit) (current_player) player_count) false
-    else(
-      ANSITerminal.(print_string [blue ]
-                      ("\n\nThe dealers stands on "^(dealer |> get_count 
-                                                     |> string_of_int)^".\n"));
-      playing_phase (st) (current_player - 1) player_count false)
   else
     let (player, bet, _, _, _, hard, _) = get_player st current_player in 
     let count = get_count player in 
@@ -205,6 +185,13 @@ let rec playing_phase (st: State.t) (current_player: player_id)
                                  "\n"));
                 playing_phase st (current_player) player_count false
               end
+            else if List.length player.split_hand > 0 && get_cash player < (3*bet) then 
+              begin
+                ANSITerminal.(print_string [red] 
+                                ("Not enough cash to double down after split." ^
+                                 "\n"));
+                playing_phase st (current_player) player_count false
+              end
             else
               begin
                 let st' = double_player st current_player in
@@ -217,6 +204,25 @@ let rec playing_phase (st: State.t) (current_player: player_id)
           )
       end
     end
+
+let rec dealer_play_phase (st : State.t) : State.t = 
+  let (dealer, busted, hard) = st.house in
+  if get_count dealer > 21 then 
+    if hard then 
+      ( print_dealer st; ANSITerminal.(print_string [green]
+                                         "\n\nThe dealer busted!\n");
+        (bust_player st 0))
+    else dealer_play_phase (make_dealer_hard st)
+  else if get_count dealer <= 16 then (
+    ANSITerminal.(print_string [blue ]
+                    ("\n\nThe dealers hits on "^(dealer |> get_count 
+                                                 |> string_of_int)^".\n"));
+    dealer_play_phase (st |> dealer_hit) )
+  else(
+    ANSITerminal.(print_string [blue ]
+                    ("\n\nThe dealers stands on "^(dealer |> get_count 
+                                                   |> string_of_int)^".\n"));
+    st)
 
 (** [find_busted st] is the list containing player_id of each player who
     busted in playing phase. *)
@@ -455,16 +461,17 @@ let rec game_body (st : State.t) : State.t =
   print_dealer st'';
   let st''' = playing_phase st'' len len false in 
   let st'''' = splits_playing_phase st''' len len false in 
+  let st''''' = dealer_play_phase st'''' in 
   (* let st'''' = st''' in  *)
-  let st''''' = moving_money_phase st'''' in 
-  let st'''''' = reset_round st''''' in
+  let st'''''' = moving_money_phase st''''' in 
+  let st''''''' = reset_round st'''''' in
   ANSITerminal.(print_string [green] ("Round complete. Would you like to continue? y/n > "));
   let resp = read_line () in (
     if resp = "n" then (
-      ANSITerminal.(print_string [red] ("Quitting...")); st''''''
+      ANSITerminal.(print_string [red] ("Quitting...")); st'''''''
     )
     else
-      game_body st''''''
+      game_body st'''''''
   )
 
 
