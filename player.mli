@@ -14,7 +14,9 @@ type t = {
   id: player_id;
   hand: card list;
   count: player_count;
-  cash: player_money
+  cash: player_money;
+  split_hand: card list;
+  split_count: player_count;
 }
 
 (** [new_player id starting_cash] is a new player with player_id [id]
@@ -27,15 +29,25 @@ val get_id : t -> player_id
 (** [get_count p] is the hand total of the player [p]. *)
 val get_count : t -> player_count
 
+(** [get_split_count p] is the split hand total of the player [p]. *)
+val get_split_count : t -> player_count
+
 (** [get_cash p] is the cash of player [p]. *)
 val get_cash : t -> player_money
 
 (** [get_hand p] is the hand of player [p]. *)
 val get_hand : t -> card list
 
-(** [sub_count_ten p] is the player identical to player [p] with player_count
+(** [get_split_hand p] is the split hand of player [p]. *)
+val get_split_hand : t -> card list 
+
+(** [sub_count_ten p] is the player identical to player [p] with count
     lowered by 10. *)
 val sub_count_ten : t -> t
+
+(** [split_sub_count_ten p] is the player identical to player [p] with split_count
+    lowered by 10. *)
+val split_sub_count_ten : t -> t
 
 (** [set_cash p money] is the player identical to player [p] with player_money
     [money]. *)
@@ -49,6 +61,18 @@ val new_round : t -> t
     to the player hand. *)
 val add_to_hand : t -> card -> t
 
-(** [inc_count p count] is the player identical to player [p] with player_count
+(** [add_to_split_hand p c] is the player identical to player [p] with card [c] added
+    to the player's split hand. *)
+val add_to_split_hand : t -> card -> t
+
+(** [inc_count p count] is the player identical to player [p] with count
     increased by [count]. *)
 val inc_count : t -> int -> t
+
+(** [inc_split_count p count] is the player identical to player [p] with split_count
+    increased by [count]. *)
+val inc_split_count : t -> int -> t
+
+(**  [split_hand p] is the player p altered to have one of the two cards
+     in hand moved into the [split_hand], with the counts updated respectively. *)
+val split_hand : t -> t

@@ -8,7 +8,7 @@ type hard = bool
 
 (** [t] is the type of state. *)
 type t = {
-  players: (Player.t * bet * bust * hard) list;
+  players: (Player.t * bet * bool * bust * bust * hard * hard) list;
   deck: Deck.t;
   house: (Player.t * bust * hard);
   turn: player_id;
@@ -28,9 +28,11 @@ val print_hidden_card : int -> unit
 
 val print_hand : t -> card list -> int -> unit 
 
-val get_player : t -> player_id -> Player.t * bet * bust * hard
+val get_player : t -> player_id -> Player.t * bet * bool * bust * bust * hard * hard
 
 val print : t -> player_id -> unit 
+
+val print_split : t -> player_id -> unit
 
 val print_dealer : t -> unit 
 
@@ -42,7 +44,11 @@ val reset_round : t -> t
 
 val change_money : t -> player_id -> player_money -> t 
 
+val double_player : t -> player_id -> t
+
 val bust_player : t -> player_id -> t 
+
+val split_bust_player : t -> player_id -> t
 
 val set_bet : t -> bet -> player_id -> t 
 
@@ -52,8 +58,14 @@ val new_deck : t -> t
 
 val hit : player_id -> t -> t
 
+val split_hit : player_id -> t -> t
+
 val dealer_hit : t -> t
 
 val make_dealer_hard : t -> t 
 
 val make_player_hard : t -> player_id -> t
+
+val make_player_split_hard : t -> player_id -> t
+
+val split_player : t -> player_id -> t 

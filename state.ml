@@ -8,7 +8,7 @@ type hard = bool
 
 (** [t] is the type of state. *)
 type t = {
-  players: (Player.t * bet * bust * hard) list;
+  players: (Player.t * bet * bool * bust * bust * hard * hard) list;
   deck: Deck.t;
   house: (Player.t * bust * hard);
   turn: player_id;
@@ -77,15 +77,21 @@ let rec print_hand (st : t) (hand : card list) (i : int) : unit =
 (** [get_player st p_id] is player object corresponding to player_id [p_id] 
     with the player's current bet amount, whether they busted or not, and 
     whether they have a soft or hard hand. *)
-let get_player (st : t) (p_id: player_id) : Player.t * bet * bust * hard =
-  let found = List.find (fun (x, _, _, _) -> x.id = p_id) st.players in
+let get_player (st : t) (p_id: player_id) : Player.t * bet * bool *bust * bust * hard * hard =
+  let found = List.find (fun (x, _, _, _, _, _, _) -> x.id = p_id) st.players in
   found
 
 (** [print st id] prints each card in the hand of the player corresponding to
     player_id [id]. *)
 let print (st : t) (id: player_id) : unit =
-  let (player, _, _, _) = get_player st id in
+  let (player, _, _, _, _, _, _) = get_player st id in
   let hand = get_hand player in
+  for j = 0 to 8 do
+    (print_hand st hand j) done;;
+
+let print_split (st : t) (id: player_id) : unit =
+  let (player, _, _, _, _, _, _) = get_player st id in
+  let hand = get_split_hand player in
   for j = 0 to 8 do
     (print_hand st hand j) done;;
 
@@ -106,7 +112,7 @@ let rec generate_n_players (players : Player.t list) = function
 
 let new_game (player_num : int) (shuffle_amt : int) : t = 
   let players = generate_n_players [] player_num in
-  let players_tup = List.map (fun x -> (x, 0, false, true)) players in
+  let players_tup = List.map (fun x -> (x, 0, false, false, false, true, true)) players in
   let deck = Deck.shuffle_n Deck.new_deck shuffle_amt in
   {
     players=players_tup;
@@ -116,7 +122,7 @@ let new_game (player_num : int) (shuffle_amt : int) : t =
   }
 
 let reset_round (st : t) : t =
-  let players' = List.map (fun (p, _, _, _) -> (new_round p, 0, false, true)) 
+  let players' = List.map (fun (p, _, _, _, _, _, _) -> (new_round p, 0, false, false, false, true, true)) 
       st.players in
   let (house, _, _) = st.house in 
   let house' = (new_round house, false, true) in
@@ -127,13 +133,12 @@ let reset_round (st : t) : t =
     turn=0;
   }
 
-
 let change_money (st : t) (p_id : player_id) (money : player_money) : t =
   {
     players= (
-      List.map (fun (ply, bt, bust, hard) -> 
-          if Player.get_id ply = p_id then (set_cash ply money, bt, bust, hard) 
-          else (ply, bt, bust, hard)
+      List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+          if Player.get_id ply = p_id then (set_cash ply money, bt, doub, bust, split_bust, hard, split_hard) 
+          else (ply, bt, doub, bust, split_bust, hard, split_hard)
         ) st.players
     );
     deck=st.deck;
@@ -141,6 +146,18 @@ let change_money (st : t) (p_id : player_id) (money : player_money) : t =
     turn=st.turn;
   }
 
+let double_player (st : t) (p_id: player_id) : t =
+  {
+    players= (
+      List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+          if Player.get_id ply = p_id then (ply, bt, true, bust, split_bust, hard, split_hard) else 
+            (ply, bt, doub, bust, split_bust, hard, split_hard)
+        ) st.players
+    );
+    deck=st.deck;
+    house=st.house;
+    turn=st.turn;
+  }
 
 let bust_player (st : t) (p_id: player_id) : t =
   if p_id = 0 then
@@ -154,9 +171,9 @@ let bust_player (st : t) (p_id: player_id) : t =
   else
     {
       players= (
-        List.map (fun (ply, bt, bust, hard) -> 
-            if Player.get_id ply = p_id then (ply, bt, true, hard) else 
-              (ply, bt, bust, hard)
+        List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+            if Player.get_id ply = p_id then (ply, bt, doub, true, split_bust, hard, split_hard) else 
+              (ply, bt, doub, bust, split_bust, hard, split_hard)
           ) st.players
       );
       deck=st.deck;
@@ -164,13 +181,26 @@ let bust_player (st : t) (p_id: player_id) : t =
       turn=st.turn;
     }
 
+let split_bust_player (st : t) (p_id: player_id) : t =
+  {
+    players= (
+      List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+          if Player.get_id ply = p_id then (ply, bt, doub, bust, true, hard, split_hard) else 
+            (ply, bt, doub, bust, split_bust, hard, split_hard)
+        ) st.players
+    );
+    deck=st.deck;
+    house=st.house;
+    turn=st.turn;
+  }
+
 
 let set_bet (st : t) (zet : bet) (player : player_id) : t =
   {
     players= (
-      List.map (fun (ply, bt, bust, hard) -> 
-          if Player.get_id ply = player then (ply, zet, bust, hard) else 
-            (ply, bt, bust, hard)
+      List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+          if Player.get_id ply = player then (ply, zet, doub, bust, split_bust, hard, split_hard) else 
+            (ply, bt, doub, bust, split_bust, hard, split_hard)
         ) st.players
     );
     deck=st.deck;
@@ -179,12 +209,15 @@ let set_bet (st : t) (zet : bet) (player : player_id) : t =
   }
 
 let get_bet (st : t) (player : player_id) : bet =
-  let (_, b, _, _) = List.find 
-      (fun (ply, bt, _, _) -> Player.get_id ply = player) 
+  let (_, b, _, _, _, _, _) = List.find 
+      (fun (ply, bt, _, _, _, _, _) -> Player.get_id ply = player) 
       st.players in b
 
 let hit_helper (player: Player.t) (c: card) : Player.t = 
   ((player |> Player.add_to_hand) c |> Player.inc_count) (Deck.val_of c)
+
+let split_hit_helper (player: Player.t) (c: card) : Player.t = 
+  ((player |> Player.add_to_split_hand) c |> Player.inc_split_count) (Deck.val_of c)
 
 let new_deck (st : t) : t = 
   {
@@ -195,18 +228,18 @@ let new_deck (st : t) : t =
   }
 
 (* pre: deck not empty *)
-let rec hit (player : player_id) (st: t) : t =
+let rec split_hit (player : player_id) (st: t) : t =
   (* add to player hand *)
   match Deck.choose st.deck with
-  | None -> hit player (new_deck st)
+  | None -> split_hit player (new_deck st)
   | Some (new_card, new_deck) -> begin
       if (new_card.value = 1) then 
         {
           players= (
-            List.map (fun (ply, bt, bust, hard) -> 
+            List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
                 if Player.get_id ply = player then 
-                  (hit_helper ply new_card, bt, bust, false) else 
-                  (ply, bt, bust, hard)
+                  (split_hit_helper ply new_card, bt, doub, bust, split_bust, false, split_hard) else 
+                  (ply, bt, doub, bust, split_bust, hard, split_hard)
               ) st.players
           );
           deck=new_deck;
@@ -216,10 +249,44 @@ let rec hit (player : player_id) (st: t) : t =
       else 
         {
           players= (
-            List.map (fun (ply, bt, bust, hard) -> 
+            List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
                 if Player.get_id ply = player then 
-                  (hit_helper ply new_card, bt, bust, hard) else 
-                  (ply, bt, bust, hard)
+                  (split_hit_helper ply new_card, bt, doub, bust, split_bust, hard, split_hard) else 
+                  (ply, bt, doub, bust, split_bust, hard, split_hard)
+              ) st.players
+          );
+          deck=new_deck;
+          house=st.house;
+          turn=st.turn;
+        }
+    end
+
+(* pre: deck not empty *)
+let rec hit (player : player_id) (st: t) : t =
+  (* add to player hand *)
+  match Deck.choose st.deck with
+  | None -> hit player (new_deck st)
+  | Some (new_card, new_deck) -> begin
+      if (new_card.value = 1) then 
+        {
+          players= (
+            List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+                if Player.get_id ply = player then 
+                  (hit_helper ply new_card, bt, doub, bust, split_bust, false, split_hard) else 
+                  (ply, bt, doub, bust, split_bust, hard, split_hard)
+              ) st.players
+          );
+          deck=new_deck;
+          house=st.house;
+          turn=st.turn;
+        }
+      else 
+        {
+          players= (
+            List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+                if Player.get_id ply = player then 
+                  (hit_helper ply new_card, bt, doub, bust, split_bust, hard, split_hard) else 
+                  (ply, bt, doub, bust, split_bust, hard, split_hard)
               ) st.players
           );
           deck=new_deck;
@@ -261,10 +328,38 @@ let make_dealer_hard (st : t) : t =
 let make_player_hard (st : t) (p_id : player_id) : t =
   {
     players= (
-      List.map (fun (ply, bt, bust, hard) -> 
+      List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
           if Player.get_id ply = p_id then 
-            (Player.sub_count_ten ply, bt, bust, true) else 
-            (ply, bt, bust, hard)
+            (Player.sub_count_ten ply, bt, doub, bust, split_bust, true, split_hard) else 
+            (ply, bt, doub, bust, split_bust, hard, split_hard)
+        ) st.players
+    );
+    deck=st.deck;
+    house=st.house;
+    turn=st.turn;
+  }
+
+let make_player_split_hard (st : t) (p_id : player_id) : t =
+  {
+    players= (
+      List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+          if Player.get_id ply = p_id then 
+            (Player.sub_count_ten ply, bt, doub, bust, split_bust, hard, true) else 
+            (ply, bt, doub, bust, split_bust, hard, split_hard)
+        ) st.players
+    );
+    deck=st.deck;
+    house=st.house;
+    turn=st.turn;
+  }
+
+let split_player (st : t) (p_id : player_id) : t =
+  {
+    players= (
+      List.map (fun (ply, bt, doub, bust, split_bust, hard, split_hard) -> 
+          if Player.get_id ply = p_id then 
+            (Player.split_hand ply, bt, doub, bust, split_bust, hard, split_hard) else 
+            (ply, bt, doub, bust, split_bust, hard, split_hard)
         ) st.players
     );
     deck=st.deck;
