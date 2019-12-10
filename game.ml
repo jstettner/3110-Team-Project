@@ -19,22 +19,24 @@ let rec betting_phase (st: State.t) (current_better: player_id)
     print_string  "> ";
     match read_line () with
     | exception e -> st
-    | bet -> begin
-        try
-          if (int_of_string bet) > current_cash then (
-            ANSITerminal.(print_string [red] 
-                            ("You can't afford to bet that much."));
-            betting_phase st current_better player_count)
-          else
-            let st' = set_bet st (int_of_string bet) current_better in 
-            betting_phase st' (current_better + 1) player_count
-        with e -> begin
-            ANSITerminal.(print_string [red]
-                            ("\nNot a valid int, try again."));
-            betting_phase (st) (current_better) (player_count)
-          end
-      end
+    | bet -> valid_bet st current_better player_count current_cash bet
   )
+
+and valid_bet (st : State.t) (current_better : player_id) (player_count : int)
+    (current_cash : int) (bet : string) =
+  try
+    if (int_of_string bet) > current_cash then (
+      ANSITerminal.(print_string [red] 
+                      ("You can't afford to bet that much."));
+      betting_phase st current_better player_count)
+    else
+      let st' = set_bet st (int_of_string bet) current_better in 
+      betting_phase st' (current_better + 1) player_count
+  with e -> begin
+      ANSITerminal.(print_string [red]
+                      ("\nNot a valid int, try again."));
+      betting_phase (st) (current_better) (player_count)
+    end
 
 (** [dealing_phase st current_player player_count] is the state after initial
     cards are dealt to each player. *)
@@ -63,46 +65,58 @@ let rec splits_playing_phase (st: State.t) (current_player: player_id)
         player_count false
     else
       let count = get_split_count player in 
-      if count > 21 then begin
-        if split_hard then (print_split st current_player;
-                            ANSITerminal.(print_string [red]
-                                            ("\nPlayer "^
-                                             (string_of_int current_player)^
-                                             " busted.\n\n"));
-                            splits_playing_phase (split_bust_player st current_player) 
-                              (current_player - 1) 
-                              player_count false)
-        else splits_playing_phase (make_player_split_hard st player.id) (current_player) 
-            player_count false 
-      end
-      else begin
-        ANSITerminal.(print_string [cyan] ("Current player: "^
-                                           (string_of_int current_player)^"\n"));
-        if doubled then (print_split st current_player; 
-                         splits_playing_phase st (current_player - 1) player_count false)
-        else begin
-          print_split st current_player;
-          ANSITerminal.(print_string [blue] ("Your count is "^
-                                             (string_of_int count)
-                                             ^".\nDo you want to hit or stand?\n"
-                                            ));
-          print_string "> ";
-          let input = read_line () in
-          try let parsed = parse input in
-            match parsed with
-            | Hit -> splits_playing_phase (split_hit current_player st) (current_player) 
-                       player_count false
-            | Stand -> splits_playing_phase st (current_player - 1) player_count false
-            | _ ->  (
-                print_endline "You can't play that on a split hand";
-                splits_playing_phase st (current_player) player_count false
-              )
-          with Malformed -> (
-              print_endline "Not a valid command";
-              splits_playing_phase st (current_player) player_count false
-            )
-        end
-      end
+      if count > 21 then busted_bet st current_player player_count doubled 
+          player split_hard
+      else not_busted_bet st current_player player_count doubled 
+          player split_hard count
+
+and busted_bet (st: State.t) (current_player: player_id) (player_count: int) 
+    (doubled : bool) (player : Player.t) (split_hard : bool): State.t =
+  if split_hard then (print_split st current_player;
+                      ANSITerminal.(print_string [red]
+                                      ("\nPlayer "^
+                                       (string_of_int current_player)^
+                                       " busted.\n\n"));
+                      splits_playing_phase (split_bust_player st current_player)
+                        (current_player - 1) 
+                        player_count false)
+  else splits_playing_phase (make_player_split_hard st player.id) 
+      (current_player) player_count false 
+
+and not_busted_bet (st: State.t) (current_player: player_id) (player_count: int)
+    (doubled : bool) (player : Player.t) (split_hard : bool) (count : int): 
+  State.t =
+  ANSITerminal.(print_string [cyan] ("Current player: "^
+                                     (string_of_int current_player)^"\n"));
+  if doubled then (print_split st current_player; splits_playing_phase st 
+                     (current_player - 1) player_count false)
+  else not_busted_bet_helper st current_player player_count doubled 
+      player split_hard count
+
+and not_busted_bet_helper (st: State.t) (current_player: player_id) 
+    (player_count: int) (doubled : bool) (player : Player.t) (split_hard : bool)
+    (count : int) : State.t = 
+  print_split st current_player;
+  ANSITerminal.(print_string [blue] ("Your count is "^
+                                     (string_of_int count)
+                                     ^".\nDo you want to hit or stand?\n"
+                                    ));
+  print_string "> ";
+  let input = read_line () in
+  try let parsed = parse input in
+    match parsed with
+    | Hit -> splits_playing_phase (split_hit current_player st) (current_player) 
+               player_count false
+    | Stand -> splits_playing_phase st (current_player - 1) player_count false
+    | _ ->  (
+        print_endline "You can't play that on a split hand";
+        splits_playing_phase st (current_player) player_count false
+      )
+  with Malformed -> (
+      print_endline "Not a valid command";
+      splits_playing_phase st (current_player) player_count false
+    )
+
 
 (** [playing_phase st current_player player_count] is the state after
     each player finishes hitting and standing. *)
@@ -111,112 +125,138 @@ let rec playing_phase (st: State.t) (current_player: player_id)
   if current_player < 0 then
     st 
   else if current_player = 0 then
-    let (dealer, busted, hard) = st.house in
-    if get_count dealer > 21 then 
-      if hard then 
-        ( print_dealer st; ANSITerminal.(print_string [green]
-                                           "\n\nThe dealer busted!\n");
-          playing_phase (bust_player st 0) (current_player - 1) player_count 
-            false)
-      else playing_phase (make_dealer_hard st) (current_player) player_count 
-          false
-    else if get_count dealer <= 16 then (
-      ANSITerminal.(print_string [blue ]
-                      ("\n\nThe dealers hits on "^(dealer |> get_count 
-                                                   |> string_of_int)^".\n"));
-      playing_phase (st |> dealer_hit) (current_player) player_count) false
-    else(
-      ANSITerminal.(print_string [blue ]
-                      ("\n\nThe dealers stands on "^(dealer |> get_count 
-                                                     |> string_of_int)^".\n"));
-      playing_phase (st) (current_player - 1) player_count false)
+    playing_dealer st current_player player_count doubled
   else
     let (player, bet, _, _, _, hard, _) = get_player st current_player in 
     let count = get_count player in 
-    if count > 21 then begin
-      if hard then (print st current_player;
-                    ANSITerminal.(print_string [red]
-                                    ("\nPlayer "^
-                                     (string_of_int current_player)^
-                                     " busted.\n\n"));
-                    playing_phase (bust_player st current_player) 
-                      (current_player - 1) 
-                      player_count false)
-      else playing_phase (make_player_hard st player.id) (current_player) 
-          player_count false 
-    end
-    else begin
-      ANSITerminal.(print_string [cyan] ("Current player: "^
-                                         (string_of_int current_player)^"\n"));
-      if doubled then (print st current_player; 
-                       playing_phase st (current_player - 1) player_count false)
-      else begin
-        print st current_player;
+    if count > 21 then
+      playing_player_busted st current_player player_count doubled
+    else playing_player_not_busted st current_player player_count doubled
+
+and playing_dealer (st: State.t) (current_player: player_id) (player_count: int)
+    (doubled : bool) : State.t =
+  let (dealer, busted, hard) = st.house in
+  if get_count dealer > 21 then 
+    if hard then 
+      ( print_dealer st; ANSITerminal.(print_string [green]
+                                         "\n\nThe dealer busted!\n");
+        playing_phase (bust_player st 0) (current_player - 1) player_count 
+          false)
+    else playing_phase (make_dealer_hard st) (current_player) player_count 
+        false
+  else if get_count dealer <= 16 then (
+    ANSITerminal.(print_string [blue ]
+                    ("\n\nThe dealers hits on "^(dealer |> get_count 
+                                                 |> string_of_int)^".\n"));
+    playing_phase (st |> dealer_hit) (current_player) player_count) false
+  else (
+    ANSITerminal.(print_string [blue ]
+                    ("\n\nThe dealers stands on "^(dealer |> get_count 
+                                                   |> string_of_int)^".\n"));
+    playing_phase (st) (current_player - 1) player_count false)
+
+and playing_player_busted (st: State.t) (current_player: player_id) 
+    (player_count: int) (doubled : bool) : State.t = 
+  let (player, bet, _, _, _, hard, _) = get_player st current_player in 
+  if hard then (print st current_player;
+                ANSITerminal.(print_string [red]
+                                ("\nPlayer "^
+                                 (string_of_int current_player)^
+                                 " busted.\n\n"));
+                playing_phase (bust_player st current_player) 
+                  (current_player - 1) 
+                  player_count false)
+  else playing_phase (make_player_hard st player.id) (current_player) 
+      player_count false
+
+and playing_player_not_busted (st: State.t) (current_player: player_id) 
+    (player_count: int) (doubled : bool) : State.t =
+  let (player, bet, _, _, _, hard, _) = get_player st current_player in 
+  let count = get_count player in 
+  begin
+    (ANSITerminal.(print_string [cyan] ("Current player: "^
+                                        (string_of_int current_player)^"\n")));
+    if doubled then (print st current_player;
+                     playing_phase st (current_player - 1) player_count false)
+    else
+      begin print st current_player;
         ANSITerminal.(print_string [blue] ("Your count is "^
                                            (string_of_int count)
                                            ^".\nDo you want to hit, stand, split, or double down?\n"
                                           ));
-        print_string "> ";
-        let input = read_line () in
-        try let parsed = parse input in
-          match parsed with
-          | Hit -> playing_phase (hit current_player st) (current_player) 
-                     player_count false
-          | Stand -> playing_phase st (current_player - 1) player_count false
-          | Split -> (
-              let card1 = List.nth player.hand 0 in 
-              let card2 = List.nth player.hand 1 in
-              if ((List.length player.hand) = 2 && 
-                  ((val_of card1) = (val_of card2)) &&
-                  (List.length player.split_hand) = 0) then
-                if get_cash player < (2*bet) then
-                  begin
-                    ANSITerminal.(print_string [red] 
-                                    ("Not enough cash to split." ^
-                                     "\n"));
-                    playing_phase st (current_player) player_count false
-                  end
-                else
-                  let split_state = split_player st current_player in
-                  ANSITerminal.(print_string [cyan] 
-                                  ("Your hand is split. You will have the opportunity to play your second hand soon." ^
-                                   "\n"));
-                  playing_phase (hit current_player split_state) (current_player) 
-                    player_count false
-              else
-                begin
-                  ANSITerminal.(print_string [red] 
-                                  ("You can split one time per round when your hand consists of two cards with the same value." ^
-                                   "\n"));
-                  playing_phase st (current_player) player_count false
-                end
-            )
-          | Double -> if List.length player.hand > 2 then 
-              begin
-                ANSITerminal.(print_string [red] 
-                                ("Cannot double down with more than 2 cards." ^
-                                 "\n"));
-                playing_phase st (current_player) player_count false
-              end
-            else if get_cash player < (2*bet) then 
-              begin
-                ANSITerminal.(print_string [red] 
-                                ("Not enough cash to double down." ^
-                                 "\n"));
-                playing_phase st (current_player) player_count false
-              end
-            else
-              begin
-                let st' = double_player st current_player in
-                playing_phase (hit (current_player) st') (current_player)
-                  player_count true 
-              end
+        print_string "> "; let input = read_line () in
+        try 
+          playing_player_helper st current_player player_count doubled input
         with Malformed -> (
             print_endline "Not a valid command";
             playing_phase st (current_player) player_count false
           )
       end
+  end
+
+and playing_player_helper (st: State.t) (current_player: player_id) (player_count: int)
+    (doubled : bool) (input : string) : State.t =
+  let parsed = parse input in
+  match parsed with
+  | Hit -> playing_phase (hit current_player st) (current_player) 
+             player_count false
+  | Stand -> playing_phase st (current_player - 1) player_count false
+  | Split -> playing_split st current_player player_count doubled
+  | Double -> playing_double st current_player player_count doubled
+
+and playing_split (st: State.t) (current_player: player_id) (player_count: int)
+    (doubled : bool): State.t = 
+  let (player, bet, _, _, _, hard, _) = get_player st current_player in 
+  let card1 = List.nth player.hand 0 in 
+  let card2 = List.nth player.hand 1 in
+  if ((List.length player.hand) = 2 && 
+      ((val_of card1) = (val_of card2)) &&
+      (List.length player.split_hand) = 0) then
+    if get_cash player < (2*bet) then
+      begin
+        ANSITerminal.(print_string [red] 
+                        ("Not enough cash to split." ^
+                         "\n"));
+        playing_phase st (current_player) player_count false
+      end
+    else
+      let split_state = split_player st current_player in
+      ANSITerminal.(print_string [cyan] 
+                      ("Your hand is split. You will have the opportunity to play your second hand soon." ^
+                       "\n"));
+      playing_phase (hit current_player split_state) (current_player) 
+        player_count false
+  else
+    begin
+      ANSITerminal.(print_string [red] 
+                      ("You can split one time per round when your hand consists of two cards with the same value." ^
+                       "\n"));
+      playing_phase st (current_player) player_count false
     end
+
+and playing_double (st: State.t) (current_player: player_id) (player_count: int) (doubled : bool) : State.t = 
+  let (player, bet, _, _, _, hard, _) = get_player st current_player in 
+  if List.length player.hand > 2 then 
+    begin
+      ANSITerminal.(print_string [red] 
+                      ("Cannot double down with more than 2 cards." ^
+                       "\n"));
+      playing_phase st (current_player) player_count false
+    end
+  else if get_cash player < (2*bet) then 
+    begin
+      ANSITerminal.(print_string [red] 
+                      ("Not enough cash to double down." ^
+                       "\n"));
+      playing_phase st (current_player) player_count false
+    end
+  else
+    begin
+      let st' = double_player st current_player in
+      playing_phase (hit (current_player) st') (current_player)
+        player_count true 
+    end
+
 
 (** [find_busted st] is the list containing player_id of each player who
     busted in playing phase. *)
@@ -421,31 +461,37 @@ let rec who_lost_split (st : State.t) (not_busted : player_id list)
     all players. *)
 let rec moving_money_phase (st : State.t) : State.t =
   if (dealer_busted st) then
-    let not_busted = find_not_busted st in
-    let busted = find_busted st in 
-    let st' = players_all_win st not_busted in
-    let st'' = players_all_lose st' busted in
-    let not_busted_split = find_not_busted_splits st'' in
-    let busted_split = find_busted_splits st'' in 
-    let st''' = split_players_all_win st'' not_busted_split in 
-    let st'''' = split_players_all_lose st''' busted_split in 
-    st''''
+    money_dealer_busted st
   else
-    let busted = find_busted st in
-    let busted_split = find_busted_splits st in 
-    let st' = players_all_lose st busted in
-    let st'' = split_players_all_lose st' busted_split in
-    let not_busted = find_not_busted st'' in 
-    let not_busted_split = find_not_busted_splits st'' in 
-    let winners = who_won st'' not_busted [] in 
-    let losers = who_lost st'' not_busted [] in
-    let split_winners = who_won_split st'' not_busted_split [] in 
-    let split_losers = who_lost_split st'' not_busted_split [] in 
-    let st''' = players_all_lose st'' losers in
-    let st'''' = players_all_win st''' winners in
-    let st''''' = split_players_all_lose st'''' split_losers in 
-    let st'''''' = split_players_all_win st''''' split_winners in
-    st''''''
+    money_dealer_not_busted st
+
+and money_dealer_busted (st : State.t) : State.t  = 
+  let not_busted = find_not_busted st in
+  let busted = find_busted st in 
+  let st' = players_all_win st not_busted in
+  let st'' = players_all_lose st' busted in
+  let not_busted_split = find_not_busted_splits st'' in
+  let busted_split = find_busted_splits st'' in 
+  let st''' = split_players_all_win st'' not_busted_split in 
+  let st'''' = split_players_all_lose st''' busted_split in 
+  st''''
+
+and money_dealer_not_busted (st : State.t) : State.t = 
+  let busted = find_busted st in
+  let busted_split = find_busted_splits st in 
+  let st' = players_all_lose st busted in
+  let st'' = split_players_all_lose st' busted_split in
+  let not_busted = find_not_busted st'' in 
+  let not_busted_split = find_not_busted_splits st'' in 
+  let winners = who_won st'' not_busted [] in 
+  let losers = who_lost st'' not_busted [] in
+  let split_winners = who_won_split st'' not_busted_split [] in 
+  let split_losers = who_lost_split st'' not_busted_split [] in 
+  let st''' = players_all_lose st'' losers in
+  let st'''' = players_all_win st''' winners in
+  let st''''' = split_players_all_lose st'''' split_losers in 
+  let st'''''' = split_players_all_win st''''' split_winners in
+  st''''''
 
 (** [game_body st] is the state after executing a full round of Blackjack. *)
 let rec game_body (st : State.t) : State.t = 
