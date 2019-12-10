@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Command.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Deck" rel="Chapter" href="Deck.html">
+<link title="Player" rel="Chapter" href="Player.html">
+<link title="State" rel="Chapter" href="State.html">
+<link title="Command" rel="Chapter" href="Command.html">
+<link title="Game" rel="Chapter" href="Game.html"><title>Game</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Command.html" title="Command">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Game.html">Game</a></h1>
+
+<pre><span id="MODULEGame"><span class="keyword">module</span> Game</span>: <code class="code">sig</code> <a href="Game.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><span id="VALbetting_phase"><span class="keyword">val</span> betting_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> int -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">betting_phase st current_better player_count</code> is the state after each 
+    player in <code class="code">st</code> finishes setting valid bets.</p>
+</div>
+</div>
+
+<pre><span id="VALdealing_phase"><span class="keyword">val</span> dealing_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> int -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">dealing_phase st current_player player_count</code> is the state after initial
+    cards are dealt to each player.</p>
+</div>
+</div>
+
+<pre><span id="VALsplits_playing_phase"><span class="keyword">val</span> splits_playing_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> int -> bool -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALplaying_phase"><span class="keyword">val</span> playing_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> int -> bool -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">playing_phase st current_player player_count</code> is the state after
+    each player finishes hitting and standing.</p>
+</div>
+</div>
+
+<pre><span id="VALdealer_play_phase"><span class="keyword">val</span> dealer_play_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALfind_busted"><span class="keyword">val</span> find_busted</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">find_busted st</code> is the list containing player_id of each player who
+    busted in playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALfind_busted_splits"><span class="keyword">val</span> find_busted_splits</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">find_busted st</code> is the list containing player_id of each player who
+    busted in playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALfind_not_busted"><span class="keyword">val</span> find_not_busted</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">find_not_busted st</code> is the list containing player_id of each player who
+    did not bust in playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALfind_not_busted_splits"><span class="keyword">val</span> find_not_busted_splits</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">find_not_busted st</code> is the list containing player_id of each player who
+    did not bust in playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALdealer_busted"><span class="keyword">val</span> dealer_busted</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> bool</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">dealer_busted st</code> is <code class="code">true</code> if dealer busted and <code class="code">false</code> otherwise.</p>
+</div>
+</div>
+
+<pre><span id="VALblackjack"><span class="keyword">val</span> blackjack</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> bool</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">blackjack st p_id</code> is <code class="code">true</code> if player with player_id <code class="code">p_id</code> scored
+    blackjack during playign phase and <code class="code">false</code> otherwise.</p>
+</div>
+</div>
+
+<pre><span id="VALplayer_win"><span class="keyword">val</span> player_win</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">player_win st p_id</code> is state with updated player with player_id <code class="code">p_id</code>
+    after adding the player's bet amount to their money total.</p>
+</div>
+</div>
+
+<pre><span id="VALplayer_win_split"><span class="keyword">val</span> player_win_split</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">player_win st p_id</code> is state with updated player with player_id <code class="code">p_id</code>
+    after adding the player's bet amount to their money total.</p>
+</div>
+</div>
+
+<pre><span id="VALplayer_loss"><span class="keyword">val</span> player_loss</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">player_loss st p_id</code> is state with updated player with player_id <code class="code">p_id</code>
+    after deducting the player's bet amount from their money total.</p>
+</div>
+</div>
+
+<pre><span id="VALplayer_loss_split"><span class="keyword">val</span> player_loss_split</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">player_loss st p_id</code> is state with updated player with player_id <code class="code">p_id</code>
+    after deducting the player's bet amount from their money total.</p>
+</div>
+</div>
+
+<pre><span id="VALplayers_all_win"><span class="keyword">val</span> players_all_win</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">players_all_win st p_ids</code> is state with updated players with player_id in 
+    <code class="code">p_ids</code> after adding the players' bet amounts to their money totals.</p>
+</div>
+</div>
+
+<pre><span id="VALsplit_players_all_win"><span class="keyword">val</span> split_players_all_win</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">players_all_win st p_ids</code> is state with updated players with player_id in 
+    <code class="code">p_ids</code> after adding the players' bet amounts to their money totals.</p>
+</div>
+</div>
+
+<pre><span id="VALplayers_all_lose"><span class="keyword">val</span> players_all_lose</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">players_all_lose st p_ids</code> is state with updated players with player_id in
+    <code class="code">p_ids</code> after deducting the players' bet amounts from their money totals.</p>
+</div>
+</div>
+
+<pre><span id="VALsplit_players_all_lose"><span class="keyword">val</span> split_players_all_lose</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">players_all_lose st p_ids</code> is state with updated players with player_id in
+    <code class="code">p_ids</code> after deducting the players' bet amounts from their money totals.</p>
+</div>
+</div>
+
+<pre><span id="VALdid_win"><span class="keyword">val</span> did_win</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> bool</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">did_win st p_id</code> is <code class="code">true</code> if player scored higher than the house and
+    <code class="code">false otherwise</code>. Assumes house and player did not bust.</p>
+</div>
+</div>
+
+<pre><span id="VALdid_win_split"><span class="keyword">val</span> did_win_split</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> bool</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">did_win st p_id</code> is <code class="code">true</code> if player scored higher than the house and
+    <code class="code">false otherwise</code>. Assumes house and player did not bust.</p>
+</div>
+</div>
+
+<pre><span id="VALwho_won"><span class="keyword">val</span> who_won</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -><br>       <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">who_won st not_busted</code> is list containing player_id of players from 
+    <code class="code">not_busted</code> who won over the house in the playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALwho_won_split"><span class="keyword">val</span> who_won_split</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -><br>       <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">who_won st not_busted</code> is list containing player_id of players from 
+    <code class="code">not_busted</code> who won over the house in the playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALwho_lost"><span class="keyword">val</span> who_lost</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -><br>       <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">who_lost st busted</code> is list containing player_id of players from <code class="code">busted</code> 
+    who did not win over the house in the playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALwho_lost_split"><span class="keyword">val</span> who_lost_split</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -><br>       <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">who_lost st busted</code> is list containing player_id of players from <code class="code">busted</code> 
+    who did not win over the house in the playing phase.</p>
+</div>
+</div>
+
+<pre><span id="VALmoving_money_phase"><span class="keyword">val</span> moving_money_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">moving_money_phase st</code> is the state after money is redistributed to
+    all players.</p>
+</div>
+</div>
+
+<pre><span id="VALgame_body"><span class="keyword">val</span> game_body</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="State.html#TYPEt">State.t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">game_body st</code> is the state after executing a full round of Blackjack.</p>
+</div>
+</div>
+
+<pre><span id="VALmain"><span class="keyword">val</span> main</span> : <code class="type">unit -> unit</code></pre></body></html>

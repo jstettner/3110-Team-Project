@@ -6,9 +6,9 @@ open Player
 (* open Game *)
 
 
-(** [make_start_room_test name adv expected_output] 
+(** [make_generate_cards_of_suit_test name st loop acc] 
     constructs an OUnit test named [name] that checks whether 
-    [start_room] returns the same value
+    [generate_cards_of_suit st loop ac] returns the same value
     as [expected_output] *)
 let make_generate_cards_of_suit_test
     (name : string) 
@@ -38,6 +38,10 @@ let cards_of_suit_tests =
       "Heart"  Heart [1] [] [{suit = Heart; value = 1}];
   ]
 
+(** [make_new_deck_test name] 
+    constructs an OUnit test named [name] that checks whether 
+    [new_deck] returns the same value
+    as [expected_output] *)
 let make_new_deck_test
     (name : string) 
     (expected_output : Deck.card list) : test = 
@@ -78,6 +82,10 @@ let new_deck_test = [
   make_new_deck_test "New Deck" standard_deck;
 ]
 
+(** [make_choose_test name deck] 
+    constructs an OUnit test named [name] that checks whether 
+    [choose deck] returns the same value
+    as [expected_output] *)
 let make_choose_test
     (name : string) 
     (deck: Deck.t)
@@ -119,6 +127,10 @@ let choose_tests = [Some
                    ]
 
 
+(** [make_val_of_test name card] 
+    constructs an OUnit test named [name] that checks whether 
+    [val_of card] returns the same value
+    as [expected_output] *)
 let make_val_of_test
     (name : string) 
     (card: Deck.card)
@@ -140,6 +152,10 @@ let val_of_tests = [
 
 ]
 
+(** [make_length_test deck] 
+    constructs an OUnit test named [name] that checks whether 
+    [length deck] returns the same value
+    as [expected_output] *)
 let make_length_test
     (name : string) 
     (deck: Deck.t)
@@ -153,6 +169,10 @@ let length_tests =
     make_length_test "length one deck" [{suit = Heart; value = 1}] 1;
   ]
 
+(** [make_command_test name str] 
+    constructs an OUnit test named [name] that checks whether 
+    [parse str] returns the same value
+    as [expected_output] *)
 let make_command_test
     (name : string) 
     (str: string) 
@@ -184,12 +204,12 @@ let make_new_player_test
       assert_equal expected_output (new_player id starting_cash))
 
 let player_1 = 
-  {id = 1; hand = []; count = 0; cash = 200}
+  {id = 1; hand = []; count = 0; cash = 200; split_hand = []; split_count = 0;}
 let player_2 = 
-  {id = 2; hand = []; count = 0; cash = 500}
+  {id = 2; hand = []; count = 0; cash = 500; split_hand = []; split_count = 0;}
 
 let player_3 = 
-  {id = 3; hand = []; count = 10; cash = 500}
+  {id = 3; hand = []; count = 10; cash = 500; split_hand = []; split_count = 0;}
 
 let new_player_test = 
   [
@@ -232,11 +252,11 @@ let make_set_cash_test
       assert_equal expected_output (set_cash player money))
 
 let player_1_updated = 
-  {id = 1; hand = []; count = 0; cash = 500}
+  {id = 1; hand = []; count = 0; cash = 500; split_hand = []; split_count = 0;}
 let player_2_updated = 
-  {id = 2; hand = []; count = 0; cash = 200}
+  {id = 2; hand = []; count = 0; cash = 200; split_hand = []; split_count = 0;}
 let player_3_updated = 
-  {id = 3; hand = []; count = 10; cash = 0}
+  {id = 3; hand = []; count = 10; cash = 0; split_hand = []; split_count = 0;}
 
 let set_cash_tests = 
   [

@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Command.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Deck" rel="Chapter" href="Deck.html">
+<link title="Player" rel="Chapter" href="Player.html">
+<link title="State" rel="Chapter" href="State.html">
+<link title="Command" rel="Chapter" href="Command.html">
+<link title="Game" rel="Chapter" href="Game.html"><title>Game</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Command.html" title="Command">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Game.html">Game</a></h1>
+
+<pre><span id="MODULEGame"><span class="keyword">module</span> Game</span>: <code class="code">sig</code> <a href="Game.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><span id="VALbetting_phase"><span class="keyword">val</span> betting_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> int -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALdealing_phase"><span class="keyword">val</span> dealing_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> int -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALplaying_phase"><span class="keyword">val</span> playing_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> int -> bool -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALfind_busted"><span class="keyword">val</span> find_busted</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre>
+<pre><span id="VALfind_not_busted"><span class="keyword">val</span> find_not_busted</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre>
+<pre><span id="VALdealer_busted"><span class="keyword">val</span> dealer_busted</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> bool</code></pre>
+<pre><span id="VALplayer_win"><span class="keyword">val</span> player_win</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALplayer_loss"><span class="keyword">val</span> player_loss</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALplayers_all_win"><span class="keyword">val</span> players_all_win</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALplayers_all_lose"><span class="keyword">val</span> players_all_lose</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALdid_win"><span class="keyword">val</span> did_win</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> bool</code></pre>
+<pre><span id="VALwho_won"><span class="keyword">val</span> who_won</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -><br>       <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre>
+<pre><span id="VALwho_lost"><span class="keyword">val</span> who_lost</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -><br>       <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> list</code></pre>
+<pre><span id="VALmoving_money_phase"><span class="keyword">val</span> moving_money_phase</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="State.html#TYPEt">State.t</a></code></pre>
+<pre><span id="VALgame_body"><span class="keyword">val</span> game_body</span> : <code class="type"><a href="State.html#TYPEt">State.t</a> -> <a href="State.html#TYPEt">State.t</a></code></pre></body></html>

@@ -105,11 +105,14 @@ let print_dealer (st : t) : unit =
         (print_hand st t j) done end
   | _ -> ()
 
+(** [generate n players players] generates n players for a new 
+    game of blackjack. *)
 let rec generate_n_players (players : Player.t list) = function
   | 0 -> players
   | n -> generate_n_players (Player.new_player n initial_cash :: players) 
            (n - 1)
 
+(** [new_game player_num shuffle_amt] initializes a new game of blackjack *)
 let new_game (player_num : int) (shuffle_amt : int) : t = 
   let players = generate_n_players [] player_num in
   let players_tup = List.map (fun x -> (x, 0, false, false, false, true, true)) players in
@@ -121,6 +124,8 @@ let new_game (player_num : int) (shuffle_amt : int) : t =
     turn=0;
   }
 
+(** [reset_round st] resets the round of blackjack to initial state of each
+    round*)
 let reset_round (st : t) : t =
   let players' = List.map (fun (p, _, _, _, _, _, _) -> (new_round p, 0, false, false, false, true, true)) 
       st.players in
@@ -133,6 +138,8 @@ let reset_round (st : t) : t =
     turn=0;
   }
 
+(** [change_money st p_id money] sets the player's money attribute to
+    [money]*)
 let change_money (st : t) (p_id : player_id) (money : player_money) : t =
   {
     players= (
@@ -146,6 +153,8 @@ let change_money (st : t) (p_id : player_id) (money : player_money) : t =
     turn=st.turn;
   }
 
+(** [double_player st p_id] sets the player's money attribute to
+    [money]*)
 let double_player (st : t) (p_id: player_id) : t =
   {
     players= (
@@ -159,6 +168,7 @@ let double_player (st : t) (p_id: player_id) : t =
     turn=st.turn;
   }
 
+(** [bust_player st p_id] busts the player with id [p_id]*)
 let bust_player (st : t) (p_id: player_id) : t =
   if p_id = 0 then
     let (dealer, _, _) = st.house in 
@@ -181,6 +191,8 @@ let bust_player (st : t) (p_id: player_id) : t =
       turn=st.turn;
     }
 
+(** [split_bust_player st p_id] busts the split hand of the player with id 
+    [p_id]*)
 let split_bust_player (st : t) (p_id: player_id) : t =
   {
     players= (
@@ -194,7 +206,7 @@ let split_bust_player (st : t) (p_id: player_id) : t =
     turn=st.turn;
   }
 
-
+(** [set_bet st zet player] sets the bet of [player] to [zet]*)
 let set_bet (st : t) (zet : bet) (player : player_id) : t =
   {
     players= (
@@ -208,6 +220,7 @@ let set_bet (st : t) (zet : bet) (player : player_id) : t =
     turn=st.turn;
   }
 
+(** [get_bet st player] returns the bet amount of [player]*)
 let get_bet (st : t) (player : player_id) : bet =
   let (_, b, _, _, _, _, _) = List.find 
       (fun (ply, bt, _, _, _, _, _) -> Player.get_id ply = player) 

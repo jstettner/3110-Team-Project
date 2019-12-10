@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Player.html">
+<link rel="next" href="Command.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Deck" rel="Chapter" href="Deck.html">
+<link title="Player" rel="Chapter" href="Player.html">
+<link title="State" rel="Chapter" href="State.html">
+<link title="Command" rel="Chapter" href="Command.html">
+<link title="Game" rel="Chapter" href="Game.html"><title>State</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Player.html" title="Player">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Command.html" title="Command">Next</a>
+</div>
+<h1>Module <a href="type_State.html">State</a></h1>
+
+<pre><span id="MODULEState"><span class="keyword">module</span> State</span>: <code class="code">sig</code> <a href="State.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><span id="TYPEbet"><span class="keyword">type</span> <code class="type"></code>bet</span> = <code class="type">int</code> </pre>
+<div class="info ">
+<div class="info-desc">
+<p><code class="code">bet</code> is the type of</p>
+
+<p><code class="code">bet</code> is the type of</p>
+</div>
+</div>
+
+
+<pre><span id="TYPEbust"><span class="keyword">type</span> <code class="type"></code>bust</span> = <code class="type">bool</code> </pre>
+
+
+<pre><span id="TYPEhard"><span class="keyword">type</span> <code class="type"></code>hard</span> = <code class="type">bool</code> </pre>
+
+
+<pre><code><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.players">players</span>&nbsp;: <code class="type">(<a href="Player.html#TYPEt">Player.t</a> * <a href="State.html#TYPEbet">bet</a> * bool * <a href="State.html#TYPEbust">bust</a> * <a href="State.html#TYPEbust">bust</a> * <a href="State.html#TYPEhard">hard</a> *<br>        <a href="State.html#TYPEhard">hard</a>)<br>       list</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.deck">deck</span>&nbsp;: <code class="type"><a href="Deck.html#TYPEt">Deck.t</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.house">house</span>&nbsp;: <code class="type"><a href="Player.html#TYPEt">Player.t</a> * <a href="State.html#TYPEbust">bust</a> * <a href="State.html#TYPEhard">hard</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.turn">turn</span>&nbsp;: <code class="type"><a href="Player.html#TYPEplayer_id">Player.player_id</a></code>;</code></td>
+
+</tr></table>
+}
+
+<div class="info ">
+<div class="info-desc">
+<p><code class="code">t</code> is the type of state.</p>
+
+<p><code class="code">t</code> is the type of state.</p>
+</div>
+</div>
+
+
+<pre><span id="VALinitial_cash"><span class="keyword">val</span> initial_cash</span> : <code class="type">int</code></pre>
+<pre><span id="VALsymbol_of_suit"><span class="keyword">val</span> symbol_of_suit</span> : <code class="type"><a href="Deck.html#TYPEsuit">Deck.suit</a> -> string</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">symbol_of_suit s</code> is the string that prints the ASCII symbol matching 
+    suit <code class="code">s</code>.</p>
+</div>
+</div>
+
+<pre><span id="VALleft_face_of_value"><span class="keyword">val</span> left_face_of_value</span> : <code class="type">int -> string</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">left_face_of_value</code> is the string that prints the appropriate number or
+    face card letter corresponding to card value <code class="code">v</code> with the alphanumeric
+    character aligned left.</p>
+</div>
+</div>
+
+<pre><span id="VALright_face_of_value"><span class="keyword">val</span> right_face_of_value</span> : <code class="type">int -> string</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">right_face_of_value</code> is the string that prints the appropriate number or
+    face card letter corresponding to card value <code class="code">v</code> with the alphanumeric 
+    character aligned right.</p>
+</div>
+</div>
+
+<pre><span id="VALprint_card"><span class="keyword">val</span> print_card</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Deck.html#TYPEcard">Deck.card</a> -> int -> unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">print_card st card i</code> prints line <code class="code">i</code> of card <code class="code">card</code> to terminal.</p>
+</div>
+</div>
+
+<pre><span id="VALprint_hidden_card"><span class="keyword">val</span> print_hidden_card</span> : <code class="type">'a -> unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">print_hidden_card x</code> prints a face down playing card to terminal.</p>
+</div>
+</div>
+
+<pre><span id="VALprint_hand"><span class="keyword">val</span> print_hand</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Deck.html#TYPEcard">Deck.card</a> list -> int -> unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">print_hand st hand i</code> prints line <code class="code">i</code> of each card in <code class="code">hand</code>.</p>
+</div>
+</div>
+
+<pre><span id="VALget_player"><span class="keyword">val</span> get_player</span> : <code class="type"><a href="State.html#TYPEt">t</a> -><br>       <a href="Player.html#TYPEplayer_id">Player.player_id</a> -><br>       <a href="Player.html#TYPEt">Player.t</a> * <a href="State.html#TYPEbet">bet</a> * bool * <a href="State.html#TYPEbust">bust</a> * <a href="State.html#TYPEbust">bust</a> * <a href="State.html#TYPEhard">hard</a> *<br>       <a href="State.html#TYPEhard">hard</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">get_player st p_id</code> is player object corresponding to player_id <code class="code">p_id</code> 
+    with the player's current bet amount, whether they busted or not, and 
+    whether they have a soft or hard hand.</p>
+</div>
+</div>
+
+<pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">print st id</code> prints each card in the hand of the player corresponding to
+    player_id <code class="code">id</code>.</p>
+</div>
+</div>
+
+<pre><span id="VALprint_split"><span class="keyword">val</span> print_split</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> unit</code></pre>
+<pre><span id="VALprint_dealer"><span class="keyword">val</span> print_dealer</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">print_dealer st</code> prints each card in the dealer's hand to terminal.</p>
+</div>
+</div>
+
+<pre><span id="VALgenerate_n_players"><span class="keyword">val</span> generate_n_players</span> : <code class="type"><a href="Player.html#TYPEt">Player.t</a> list -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="Player.html#TYPEt">Player.t</a> list</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">generate n players players</code> generates n players for a new 
+    game of blackjack.</p>
+</div>
+</div>
+
+<pre><span id="VALnew_game"><span class="keyword">val</span> new_game</span> : <code class="type">int -> int -> <a href="State.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">new_game player_num shuffle_amt</code> initializes a new game of blackjack</p>
+</div>
+</div>
+
+<pre><span id="VALreset_round"><span class="keyword">val</span> reset_round</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="State.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">reset_round st</code> resets the round of blackjack to initial state of each
+    round</p>
+</div>
+</div>
+
+<pre><span id="VALchange_money"><span class="keyword">val</span> change_money</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="Player.html#TYPEplayer_money">Player.player_money</a> -> <a href="State.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">change_money st p_id money</code> sets the player's money attribute to
+    <code class="code">money</code></p>
+</div>
+</div>
+
+<pre><span id="VALdouble_player"><span class="keyword">val</span> double_player</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">double_player st p_id</code> sets the player's money attribute to
+    <code class="code">money</code></p>
+</div>
+</div>
+
+<pre><span id="VALbust_player"><span class="keyword">val</span> bust_player</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">bust_player st p_id</code> busts the player with id <code class="code">p_id</code></p>
+</div>
+</div>
+
+<pre><span id="VALsplit_bust_player"><span class="keyword">val</span> split_bust_player</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">split_bust_player st p_id</code> busts the split hand of the player with id 
+    <code class="code">p_id</code></p>
+</div>
+</div>
+
+<pre><span id="VALset_bet"><span class="keyword">val</span> set_bet</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="State.html#TYPEbet">bet</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">set_bet st zet player</code> sets the bet of <code class="code">player</code> to <code class="code">zet</code></p>
+</div>
+</div>
+
+<pre><span id="VALget_bet"><span class="keyword">val</span> get_bet</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEbet">bet</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">get_bet st player</code> returns the bet amount of <code class="code">player</code></p>
+</div>
+</div>
+
+<pre><span id="VALhit_helper"><span class="keyword">val</span> hit_helper</span> : <code class="type"><a href="Player.html#TYPEt">Player.t</a> -> <a href="Deck.html#TYPEcard">Deck.card</a> -> <a href="Player.html#TYPEt">Player.t</a></code></pre>
+<pre><span id="VALsplit_hit_helper"><span class="keyword">val</span> split_hit_helper</span> : <code class="type"><a href="Player.html#TYPEt">Player.t</a> -> <a href="Deck.html#TYPEcard">Deck.card</a> -> <a href="Player.html#TYPEt">Player.t</a></code></pre>
+<pre><span id="VALnew_deck"><span class="keyword">val</span> new_deck</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="State.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsplit_hit"><span class="keyword">val</span> split_hit</span> : <code class="type"><a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a> -> <a href="State.html#TYPEt">t</a></code></pre>
+<pre><span id="VALhit"><span class="keyword">val</span> hit</span> : <code class="type"><a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a> -> <a href="State.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdealer_hit"><span class="keyword">val</span> dealer_hit</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="State.html#TYPEt">t</a></code></pre>
+<pre><span id="VALmake_dealer_hard"><span class="keyword">val</span> make_dealer_hard</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="State.html#TYPEt">t</a></code></pre>
+<pre><span id="VALmake_player_hard"><span class="keyword">val</span> make_player_hard</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a></code></pre>
+<pre><span id="VALmake_player_split_hard"><span class="keyword">val</span> make_player_split_hard</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsplit_player"><span class="keyword">val</span> split_player</span> : <code class="type"><a href="State.html#TYPEt">t</a> -> <a href="Player.html#TYPEplayer_id">Player.player_id</a> -> <a href="State.html#TYPEt">t</a></code></pre></body></html>
