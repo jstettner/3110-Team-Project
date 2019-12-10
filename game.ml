@@ -99,8 +99,7 @@ and not_busted_bet_helper (st: State.t) (current_player: player_id)
   print_split st current_player;
   ANSITerminal.(print_string [blue] ("Your count is "^
                                      (string_of_int count)
-                                     ^".\nDo you want to hit or stand?\n"
-                                    ));
+                                     ^".\nDo you want to hit or stand?\n"));
   print_string "> ";
   let input = read_line () in
   try let parsed = parse input in
