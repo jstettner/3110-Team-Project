@@ -3,6 +3,8 @@ open Deck
 open Player
 open Command
 
+(** [bet_prompt current_better current_cash] prints a message to the player
+    telling them to enter a bet. *)
 let bet_prompt (current_better: player_id) (current_cash: player_money) = 
   ANSITerminal.(print_string [green]
                   ("\n\nPlayer "^
@@ -22,6 +24,9 @@ let rec betting_phase (st: State.t) (current_better: player_id)
     bet_prompt current_better current_cash;
     handle_betting_input st (read_line ()) current_cash current_better player_count)
 
+(** [handle_betting_input st line current_cash current_better player_count] 
+    returns a state that occurs after the user enters input in the playing
+    phase. *)
 and handle_betting_input 
     (st: State.t) 
     (line: string)
@@ -61,6 +66,8 @@ let rec dealing_phase (st: State.t) (current_player: player_id)
         (current_player + 1) player_count
   end
 
+(** [splits_playing_phase st current_player player_count] is the state after
+    each player finishes hitting and standing on their split hands. *)
 let rec splits_playing_phase (st: State.t) (current_player: player_id) 
     (player_count: int) : State.t =
   if current_player <= 0 then
@@ -75,6 +82,9 @@ let rec splits_playing_phase (st: State.t) (current_player: player_id)
     else
       split_legal_hand st current_player player_count  player split_hard;
 
+    (** [split_legal_hand st current_player player_count player split_hard]
+        initiates the split procedure on a hand that is allowed to be split for
+        [current_player]. *)
 and split_legal_hand
     (st: State.t) 
     (current_player: player_id) 
@@ -97,6 +107,8 @@ and split_legal_hand
     split_non_bust st input current_player player_count player split_hard
   end
 
+(** [split_non_bust st input current_player player_count player split_hard]
+    splits the [current_player]'s non-busted hand. *)
 and split_non_bust
     (st: State.t) 
     (input: string)
@@ -118,6 +130,8 @@ and split_non_bust
       splits_playing_phase st (current_player) player_count 
     )
 
+(** [split_bust st input current_player player_count player split_hard]
+    splits the [current_player]'s busted hand. *)
 and split_bust 
     (st: State.t) 
     (current_player: player_id) 
@@ -164,6 +178,9 @@ let rec playing_phase (st: State.t) (current_player: player_id)
       end
     end
 
+(** [handle_playing_input st input bet current_player player_count player hard]
+    parses the user input into a command and then initiates that action for 
+    [current_player]. *)
 and handle_playing_input
     (st: State.t) 
     (input: string)
@@ -178,13 +195,15 @@ and handle_playing_input
                player_count false
     | Stand -> playing_phase st (current_player - 1) player_count false
     | Split -> handle_playing_split st input bet current_player player_count player hard;
-    | Double -> handle_playing_split st input bet current_player player_count player hard;
+    | Double -> handle_playing_double st input bet current_player player_count player hard;
   with Malformed -> (
       print_endline "Not a valid command";
       playing_phase st (current_player) player_count false
     )
 
-and handle_palying_double 
+(** [handle_playing_double st input bet current_player player_count player hard]
+    handles a doubling command for [current_player]. *)
+and handle_playing_double 
     (st: State.t) 
     (input: string)
     (bet: player_money)
@@ -212,6 +231,8 @@ and handle_palying_double
     playing_phase (hit (current_player) st') (current_player)
       player_count true 
 
+(** [handle_playing_double st input bet current_player player_count player hard]
+    handles a splitting command for [current_player]. *)
 and handle_playing_split
     (st: State.t) 
     (input: string)
@@ -234,6 +255,8 @@ and handle_playing_split
       playing_phase st (current_player) player_count false
     end
 
+(** [initiate_playing_split st bet current_player player_count player hard]
+    starts a legal split for [current_player]. *)
 and initiate_playing_split
     (st: State.t) 
     (bet: player_money)
@@ -256,7 +279,8 @@ and initiate_playing_split
     playing_phase (hit current_player split_state) (current_player) 
       player_count false
 
-
+(** [playing_bust st current_player player_count player hard]
+    handles [current_player], who's count is greater than 21. *)
 and playing_bust
     (st: State.t) 
     (current_player: player_id) 
@@ -274,6 +298,8 @@ and playing_bust
   else playing_phase (make_player_hard st player.id) (current_player) 
       player_count false 
 
+(** [dealer_play_phase st] returns an updated state after the dealer has
+    finished hitting and standing. *)
 let rec dealer_play_phase (st : State.t) : State.t = 
   let (dealer, busted, hard) = st.house in
   if get_count dealer > 21 then 
@@ -299,8 +325,8 @@ let rec find_busted (st : State.t) : player_id list =
   let busted = List.filter (fun (_, _, _, bust, _, _, _) -> bust) st.players in 
   List.map (fun (p, _, _, _, _, _, _) -> p.id) busted
 
-(** [find_busted st] is the list containing player_id of each player who
-    busted in playing phase. *)
+(** [find_busted_splits st] is the list containing player_id of each player who
+    busted their split in playing phase. *)
 let rec find_busted_splits (st : State.t) : player_id list =
   let busted = List.filter (fun (_, _, _, _, split_bust, _, _) -> split_bust) st.players in 
   List.map (fun (p, _, _, _, _, _, _) -> p.id) busted
@@ -311,8 +337,8 @@ let rec find_not_busted (st : State.t) : player_id list =
   let not_busted = List.filter (fun (_, _, _, bust, _, _, _) -> (not bust)) st.players in
   List.map (fun (p, _, _, _, _, _, _) -> p.id) not_busted
 
-(** [find_not_busted st] is the list containing player_id of each player who
-    did not bust in playing phase. *)
+(** [find_not_busted_splits st] is the list containing player_id of each player who
+    did not bust their split in playing phase. *)
 let rec find_not_busted_splits (st : State.t) : player_id list = 
   let not_busted = List.filter (fun (p, _, _, _, split_bust, _, _) -> 
       ((not split_bust) && (List.length p.split_hand > 0))) st.players in
@@ -340,7 +366,7 @@ let player_win (st : State.t) (p_id : player_id) : State.t =
     let new_cash = (get_cash player) + (get_bet st p_id) in 
     change_money st p_id new_cash
 
-(** [player_win st p_id] is state with updated player with player_id [p_id]
+(** [player_win_split st p_id] is state with updated player with player_id [p_id]
     after adding the player's bet amount to their money total. *)
 let player_win_split (st : State.t) (p_id : player_id) : State.t =
   let (player, _, _, _, _, _, _) = get_player st p_id in
@@ -358,7 +384,7 @@ let player_loss (st : State.t) (p_id : player_id) : State.t =
     let new_cash = (get_cash player) - (get_bet st p_id) in 
     change_money st p_id new_cash
 
-(** [player_loss st p_id] is state with updated player with player_id [p_id]
+(** [player_loss_split st p_id] is state with updated player with player_id [p_id]
     after deducting the player's bet amount from their money total.  *)
 let player_loss_split (st : State.t) (p_id : player_id) : State.t =
   let (player, _, _, _, _, _, _) = get_player st p_id in 
@@ -381,8 +407,9 @@ let rec players_all_win (st : State.t) (p_ids : player_id list) : State.t =
       players_all_win (player_win st h) t
     )
 
-(** [players_all_win st p_ids] is state with updated players with player_id in 
-    [p_ids] after adding the players' bet amounts to their money totals. *)
+(** [split_players_all_win st p_ids] is state with updated players with player_id in 
+    [p_ids] after adding the players' bet amounts to their money totals.
+    Only applies to split winners. *)
 let rec split_players_all_win (st : State.t) (p_ids : player_id list) : State.t =
   match p_ids with
   | [] -> st
@@ -412,8 +439,9 @@ let rec players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
       players_all_lose (player_loss st h) t
     )
 
-(** [players_all_lose st p_ids] is state with updated players with player_id in
-    [p_ids] after deducting the players' bet amounts from their money totals. *)
+(** [split_players_all_lose st p_ids] is state with updated players with player_id in
+    [p_ids] after deducting the players' bet amounts from their money totals.
+    Only applies to split losers. *)
 let rec split_players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
   match p_ids with
   | [] -> st
@@ -434,8 +462,8 @@ let did_win (st : State.t) (p_id : player_id) : bool =
   let (player, _, _, _, _, _, _) = get_player st p_id in 
   (get_count h < get_count player)
 
-(** [did_win st p_id] is [true] if player scored higher than the house and
-    [false otherwise]. Assumes house and player did not bust. *)
+(** [did_win_split st p_id] is [true] if player scored higher in their split hand
+     than the house and [false otherwise]. Assumes house and player did not bust. *)
 let did_win_split (st : State.t) (p_id : player_id) : bool =
   let (h, _, _) = st.house in
   let (player, _, _, _, _, _, _) = get_player st p_id in 
@@ -454,8 +482,8 @@ let rec who_won (st : State.t) (not_busted : player_id list)
         who_won st t winners
     end
 
-(** [who_won st not_busted] is list containing player_id of players from 
-    [not_busted] who won over the house in the playing phase. *)
+(** [who_won_split st not_busted] is list containing player_id of players from 
+    [not_busted] who won over the house in their split in the playing phase. *)
 let rec who_won_split (st : State.t) (not_busted : player_id list) 
     (winners : player_id list) : player_id list = 
   match not_busted with
@@ -480,8 +508,8 @@ let rec who_lost (st : State.t) (not_busted : player_id list)
         who_lost st t losers
     end
 
-(** [who_lost st busted] is list containing player_id of players from [busted] 
-    who did not win over the house in the playing phase. *)
+(** [who_lost_split st busted] is list containing player_id of players from [busted] 
+    who did not win over the house in their split in the playing phase. *)
 let rec who_lost_split (st : State.t) (not_busted : player_id list) 
     (losers : player_id list) : player_id list = 
   match not_busted with
@@ -501,6 +529,8 @@ let rec moving_money_phase (st : State.t) : State.t =
   else
     dealer_did_not_bust st
 
+(** [dealer_did_bust st] is the state when money is redistributed to
+    all players after the dealer busts. *)
 and dealer_did_bust (st: State.t): State.t = 
   let not_busted = find_not_busted st in
   let busted = find_busted st in 
@@ -512,6 +542,8 @@ and dealer_did_bust (st: State.t): State.t =
   let st'''' = split_players_all_lose st''' busted_split in 
   st''''
 
+(** [dealer_did_not_bust st] is the state when money is redistributed to
+    all players after the dealer does not bust. *)
 and dealer_did_not_bust (st: State.t): State.t = 
   let busted = find_busted st in
   let busted_split = find_busted_splits st in 
@@ -551,7 +583,7 @@ let rec game_body (st : State.t) : State.t =
       game_body st'''''''
   )
 
-
+(* Main game prompts. *)
 let main () =
   ANSITerminal.(print_string [blue]
                   "\n\nWelcome to Blackjack.\n");
