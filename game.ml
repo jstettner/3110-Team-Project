@@ -194,8 +194,8 @@ and playing_player_not_busted (st: State.t) (current_player: player_id)
       end
   end
 
-and playing_player_helper (st: State.t) (current_player: player_id) (player_count: int)
-    (doubled : bool) (input : string) : State.t =
+and playing_player_helper (st: State.t) (current_player: player_id) 
+    (player_count: int) (doubled : bool) (input : string) : State.t =
   let parsed = parse input in
   match parsed with
   | Hit -> playing_phase (hit current_player st) (current_player) 
@@ -234,7 +234,8 @@ and playing_split (st: State.t) (current_player: player_id) (player_count: int)
       playing_phase st (current_player) player_count false
     end
 
-and playing_double (st: State.t) (current_player: player_id) (player_count: int) (doubled : bool) : State.t = 
+and playing_double (st: State.t) (current_player: player_id) (player_count: int)
+    (doubled : bool) : State.t = 
   let (player, bet, _, _, _, hard, _) = get_player st current_player in 
   if List.length player.hand > 2 then 
     begin
@@ -267,19 +268,20 @@ let rec find_busted (st : State.t) : player_id list =
 (** [find_busted st] is the list containing player_id of each player who
     busted in playing phase. *)
 let rec find_busted_splits (st : State.t) : player_id list =
-  let busted = List.filter (fun (_, _, _, _, split_bust, _, _) -> split_bust) st.players in 
-  List.map (fun (p, _, _, _, _, _, _) -> p.id) busted
+  let busted = List.filter (fun (_, _, _, _, split_bust, _, _) -> split_bust) 
+      st.players in List.map (fun (p, _, _, _, _, _, _) -> p.id) busted
 
 (** [find_not_busted st] is the list containing player_id of each player who
     did not bust in playing phase. *)
 let rec find_not_busted (st : State.t) : player_id list = 
-  let not_busted = List.filter (fun (_, _, _, bust, _, _, _) -> (not bust)) st.players in
-  List.map (fun (p, _, _, _, _, _, _) -> p.id) not_busted
+  let not_busted = List.filter (fun (_, _, _, bust, _, _, _) -> (not bust)) 
+      st.players in List.map (fun (p, _, _, _, _, _, _) -> p.id) not_busted
 
 (** [find_not_busted st] is the list containing player_id of each player who
     did not bust in playing phase. *)
 let rec find_not_busted_splits (st : State.t) : player_id list = 
-  let not_busted = List.filter (fun (p, _, _, _, split_bust, _, _) -> ((not split_bust) && (List.length p.split_hand > 0))) st.players in
+  let not_busted = List.filter (fun (p, _, _, _, split_bust, _, _) -> 
+      ((not split_bust) && (List.length p.split_hand > 0))) st.players in
   List.map (fun (p, _, _, _, _, _, _) -> p.id) not_busted
 
 (** [dealer_busted st] is [true] if dealer busted and [false] otherwise. *)
@@ -347,7 +349,8 @@ let rec players_all_win (st : State.t) (p_ids : player_id list) : State.t =
 
 (** [players_all_win st p_ids] is state with updated players with player_id in 
     [p_ids] after adding the players' bet amounts to their money totals. *)
-let rec split_players_all_win (st : State.t) (p_ids : player_id list) : State.t =
+let rec split_players_all_win (st : State.t) (p_ids : player_id list) : 
+  State.t =
   match p_ids with
   | [] -> st
   | h :: t ->  (
@@ -378,16 +381,17 @@ let rec players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
 
 (** [players_all_lose st p_ids] is state with updated players with player_id in
     [p_ids] after deducting the players' bet amounts from their money totals. *)
-let rec split_players_all_lose (st : State.t) (p_ids : player_id list) : State.t =
+let rec split_players_all_lose (st : State.t) (p_ids : player_id list) : 
+  State.t =
   match p_ids with
   | [] -> st
   | h :: t ->  (
       let (player, _, _, _, _, _, _) = get_player st h in 
       ANSITerminal.(print_string [red] ("Player "^(string_of_int h)^" lost $"^ 
                                         string_of_int (get_bet st h) ^
-                                        " on a split and has a total of $"^string_of_int 
-                                          (get_cash player - (get_bet st h))^
-                                        "\n"));
+                                        " on a split and has a total of $"^
+                                        string_of_int (get_cash player - 
+                                                       (get_bet st h))^"\n"));
       split_players_all_lose (player_loss_split st h) t
     )
 
