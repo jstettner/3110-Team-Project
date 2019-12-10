@@ -16,8 +16,7 @@ type t = {
 
 let initial_cash = 500
 
-(** [symbol_of_suit s] is the string that prints the ASCII symbol matching 
-    suit [s]. *)
+
 let symbol_of_suit (s : suit) : string = 
   match s with 
   | Heart -> "    ♥    "
@@ -25,9 +24,7 @@ let symbol_of_suit (s : suit) : string =
   | Spade -> "    ♠    "
   | Club -> "    ♣    "
 
-(** [left_face_of_value] is the string that prints the appropriate number or
-    face card letter corresponding to card value [v] with the alphanumeric
-    character aligned left. *)
+
 let left_face_of_value (v : int) : string =
   if v = 11 then "J        "
   else if v = 12 then "Q        "
@@ -36,9 +33,7 @@ let left_face_of_value (v : int) : string =
   else if v = 10 then "10       "
   else string_of_int v ^ "        "
 
-(** [right_face_of_value] is the string that prints the appropriate number or
-    face card letter corresponding to card value [v] with the alphanumeric 
-    character aligned right. *)
+
 let right_face_of_value (v : int) : string =
   if v = 11 then "        J"
   else if v = 12 then "        Q"
@@ -47,7 +42,7 @@ let right_face_of_value (v : int) : string =
   else if v = 10 then "       10"
   else "        " ^ string_of_int v 
 
-(** [print_card st card i] prints line [i] of card [card] to terminal. *)
+
 let print_card (st : t) (card : card) (i : int) : unit =
   if i = 0 then print_string "┌─────────┐"
   else if i = 1 then print_string ("│" ^ left_face_of_value card.value ^ "│")
@@ -56,7 +51,7 @@ let print_card (st : t) (card : card) (i : int) : unit =
   else if i = 8 then print_string "└─────────┘"
   else print_string "│         │"
 
-(** [print_hidden_card x] prints a face down playing card to terminal. *)
+
 let print_hidden_card x: unit =
   begin 
     print_endline "┌─────────┐";
@@ -70,24 +65,21 @@ let print_hidden_card x: unit =
     print_endline "└─────────┘";
   end
 
-(** [print_hand st hand i] prints line [i] of each card in [hand]. *)
 let rec print_hand (st : t) (hand : card list) (i : int) : unit =
   ignore (List.map (fun x -> print_card st x i) hand); print_endline ""
 
-(** [get_player st p_id] is player object corresponding to player_id [p_id] 
-    with the player's current bet amount, whether they busted or not, and 
-    whether they have a soft or hard hand. *)
+
 let get_player (st : t) (p_id: player_id) : Player.t * bet * bool *bust * bust * hard * hard =
   let found = List.find (fun (x, _, _, _, _, _, _) -> x.id = p_id) st.players in
   found
 
-(** [print st id] prints each card in the hand of the player corresponding to
-    player_id [id]. *)
+
 let print (st : t) (id: player_id) : unit =
   let (player, _, _, _, _, _, _) = get_player st id in
   let hand = get_hand player in
   for j = 0 to 8 do
     (print_hand st hand j) done;;
+
 
 let print_split (st : t) (id: player_id) : unit =
   let (player, _, _, _, _, _, _) = get_player st id in
@@ -95,7 +87,7 @@ let print_split (st : t) (id: player_id) : unit =
   for j = 0 to 8 do
     (print_hand st hand j) done;;
 
-(** [print_dealer st] prints each card in the dealer's hand to terminal. *)
+
 let print_dealer (st : t) : unit =
   let (dealer, _, _) = st.house in
   let hand = get_hand dealer in
@@ -105,14 +97,12 @@ let print_dealer (st : t) : unit =
         (print_hand st t j) done end
   | _ -> ()
 
-(** [generate n players players] generates n players for a new 
-    game of blackjack. *)
 let rec generate_n_players (players : Player.t list) = function
   | 0 -> players
   | n -> generate_n_players (Player.new_player n initial_cash :: players) 
            (n - 1)
 
-(** [new_game player_num shuffle_amt] initializes a new game of blackjack *)
+
 let new_game (player_num : int) (shuffle_amt : int) : t = 
   let players = generate_n_players [] player_num in
   let players_tup = List.map (fun x -> (x, 0, false, false, false, true, true)) players in
@@ -124,8 +114,6 @@ let new_game (player_num : int) (shuffle_amt : int) : t =
     turn=0;
   }
 
-(** [reset_round st] resets the round of blackjack to initial state of each
-    round*)
 let reset_round (st : t) : t =
   let players' = List.map (fun (p, _, _, _, _, _, _) -> (new_round p, 0, false, false, false, true, true)) 
       st.players in
@@ -138,8 +126,7 @@ let reset_round (st : t) : t =
     turn=0;
   }
 
-(** [change_money st p_id money] sets the player's money attribute to
-    [money]*)
+
 let change_money (st : t) (p_id : player_id) (money : player_money) : t =
   {
     players= (
@@ -153,8 +140,7 @@ let change_money (st : t) (p_id : player_id) (money : player_money) : t =
     turn=st.turn;
   }
 
-(** [double_player st p_id] sets the player's money attribute to
-    [money]*)
+
 let double_player (st : t) (p_id: player_id) : t =
   {
     players= (
@@ -168,7 +154,7 @@ let double_player (st : t) (p_id: player_id) : t =
     turn=st.turn;
   }
 
-(** [bust_player st p_id] busts the player with id [p_id]*)
+
 let bust_player (st : t) (p_id: player_id) : t =
   if p_id = 0 then
     let (dealer, _, _) = st.house in 
@@ -191,8 +177,6 @@ let bust_player (st : t) (p_id: player_id) : t =
       turn=st.turn;
     }
 
-(** [split_bust_player st p_id] busts the split hand of the player with id 
-    [p_id]*)
 let split_bust_player (st : t) (p_id: player_id) : t =
   {
     players= (
@@ -206,7 +190,6 @@ let split_bust_player (st : t) (p_id: player_id) : t =
     turn=st.turn;
   }
 
-(** [set_bet st zet player] sets the bet of [player] to [zet]*)
 let set_bet (st : t) (zet : bet) (player : player_id) : t =
   {
     players= (
@@ -220,15 +203,18 @@ let set_bet (st : t) (zet : bet) (player : player_id) : t =
     turn=st.turn;
   }
 
-(** [get_bet st player] returns the bet amount of [player]*)
+
 let get_bet (st : t) (player : player_id) : bet =
   let (_, b, _, _, _, _, _) = List.find 
       (fun (ply, bt, _, _, _, _, _) -> Player.get_id ply = player) 
       st.players in b
 
+(** [hit_helper] adds a card to the hand of [player] and adds its count to their 
+    total count*)
 let hit_helper (player: Player.t) (c: card) : Player.t = 
   ((player |> Player.add_to_hand) c |> Player.inc_count) (Deck.val_of c)
 
+(** [split_hit_helper] adds a card to the hand of [player] and *)
 let split_hit_helper (player: Player.t) (c: card) : Player.t = 
   ((player |> Player.add_to_split_hand) c |> Player.inc_split_count) (Deck.val_of c)
 
@@ -240,7 +226,7 @@ let new_deck (st : t) : t =
     turn=st.turn;
   }
 
-(* pre: deck not empty *)
+
 let rec split_hit (player : player_id) (st: t) : t =
   (* add to player hand *)
   match Deck.choose st.deck with
@@ -274,7 +260,7 @@ let rec split_hit (player : player_id) (st: t) : t =
         }
     end
 
-(* pre: deck not empty *)
+
 let rec hit (player : player_id) (st: t) : t =
   (* add to player hand *)
   match Deck.choose st.deck with
