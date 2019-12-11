@@ -41,3 +41,6 @@ docs-private: build
 clean:
 	ocamlbuild -clean
 	rm -rf doc.public doc.private
+
+zip:
+	zip src.zip *.ml* *.mli _tags Makefile
